@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>BATTLESHIP😮</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .wrapper {
+      display: flex;
+      width: 100%;
+    }
+
+    .board-container {
+      display: grid;
+      grid-template-columns: repeat(11, 4em);
+      grid-template-rows: repeat(11, 4em);
+      background-color: #ddd;
+      padding: 10px;
+      justify-content: center;
+      grid-gap: 2px;
+    }
+
+    .board-item {
+      background-color: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      font-size: 20px;
+      text-align: center;
+      border-radius: 3px;
+      border: none;
+    }
+
+    /* 
+    .legend {
+      backgro
+    } */
+
+    .game-item {
+      font-size: 0;
+    }
+
+    .default {
+      background-color: rgb(46, 46, 185);
+    }
+
+    .default:hover {
+      cursor: pointer;
+    }
+
+    .hit {
+      background-color: rgb(161, 54, 54);
+    }
+
+    .miss {
+      background-color: rgb(146, 175, 175);
+    }
+
+    .destroyed {
+      background-color: rgb(66, 66, 66);
+    }
+
+    .stats-bar {
+      margin-right: 1em;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="game-status"></div>
+  <div class="wrapper">
+    <div class="board-container" id="main-board"></div>
+    <!-- <div class="board-container" id="internal-board"></div> -->
+    <div class="board-container" id="aggregate-board"></div>
+  </div>
+  <div id="stats" class='stats-bar'>Turn: <span id="turn-count">0</span><button id="reset">Reset</button>
+    <button id='start-ai'>Let AI play</button>
+  </div>
+
+</body>
+<script src='index.js'></script>
+
+</html>
