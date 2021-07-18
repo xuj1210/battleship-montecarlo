@@ -33,7 +33,7 @@ const SUBMARINE1 = 3;
 const DESTROYER = 2;
 const SUBMARINE2 = 6;
 
-const SLEEPTIME = 400;
+const SLEEPTIME = 500;
 
 let shipHits = {
   carrier: { hits: 0, sunk: false },
@@ -332,56 +332,59 @@ const sleep = (milliseconds) => {
 
 
 
-let randomMoves = async () => {
-  let tried = new Set();
-  let children = boardNode.childNodes;
-  while (!won) {
-    console.log('moving');
-    let index = randomInt(numTiles);
-    while (tried.has(index)) {
-      index = randomInt(numTiles);
-    }
-    tried.add(index);
-    children[index].click();
-    if (boardState.visible[index] === HIT) {
-      seekDestroy(index, children);
-    }
-    await sleep(SLEEPTIME);
-  }
-}
+// let randomMoves = async () => {
+//   let tried = new Set();
+//   let children = boardNode.childNodes;
+//   while (!won) {
+//     console.log('moving');
+//     let index = randomInt(numTiles);
+//     while (tried.has(index)) {
+//       index = randomInt(numTiles);
+//     }
+//     tried.add(index);
+//     children[index].click();
+//     if (boardState.visible[index] === HIT) {
+//       seekDestroy(index, children);
+//     }
+//     await sleep(SLEEPTIME);
+//   }
+// }
 
 
 let heatMapColorforValue = (value) => {
+  if (value === 0) {
+    return "hsl(240, 100%, 30%";
+  }
   let h = (1.0 - value) * 240;
   return "hsl(" + h + ", 100%, 50%)";
 }
 
 
-let generatePossible = (gameBoard) => {
-  // clear gameboard
-  while (gameBoard.length) {
-    gameBoard.pop();
+let generatePossible = (sourceBoard, possibleBoard) => {
+  // clear possibleBoard
+  while (possibleBoard.length) {
+    possibleBoard.pop();
   }
 
   for (let i = 0; i < numTiles; ++i) {
-    gameBoard.push(boardState.visible[i]);
+    possibleBoard.push(sourceBoard[i]);
   }
   if (!shipHits.carrier.sunk) {
-    placeShip(CARRIER, gameBoard, false, false, []);
+    placeShip(CARRIER, possibleBoard, false, false, []);
   }
   if (!shipHits.battleship.sunk) {
-    placeShip(BATTLESHIP, gameBoard, false, false, []);
+    placeShip(BATTLESHIP, possibleBoard, false, false, []);
   }
   if (!shipHits.submarine1.sunk) {
-    placeShip(SUBMARINE1, gameBoard, false, false, []);
+    placeShip(SUBMARINE1, possibleBoard, false, false, []);
   }
   if (!shipHits.submarine2.sunk) {
-    placeShip(SUBMARINE1, gameBoard, true, false, []);
+    placeShip(SUBMARINE1, possibleBoard, true, false, []);
   }
   if (!shipHits.destroyer.sunk) {
-    placeShip(DESTROYER, gameBoard, false, false, []);
+    placeShip(DESTROYER, possibleBoard, false, false, []);
   }
-  return gameBoard;
+  return possibleBoard;
 }
 
 
@@ -400,7 +403,7 @@ let aggregateSets = (board) => {
   let tempArr = [];
   for (let i = 0; i < numTests; ++i) {
     // console.log('before-possible');
-    let possible = generatePossible(tempArr);
+    let possible = generatePossible(board, tempArr);
     // console.log('after possible');
 
     for (let j = 0; j < numTiles; ++j) {
@@ -487,6 +490,9 @@ let placeShipFromTo = (length, board, secondSub, idx, direction) => {
   // } else {
   //   increment = RIGHT;
   // }
+  if (!inRange(curIdx) || lettersNumbers.has(board[curIdx])) {
+    return;
+  }
   for (let i = 0; i < length; ++i) {
     curIdx += direction;
     if (!inRange(curIdx) || lettersNumbers.has(board[curIdx]) || board[curIdx] === MISS || board[curIdx] === DESTROYED) {
@@ -503,72 +509,104 @@ let placeShipFromTo = (length, board, secondSub, idx, direction) => {
   }
   curIdx = idx;
   for (let i = 0; i < length; ++i) {
-    board[curIdx] = ship;
+    // board[curIdx] = ship;
+    ++board[curIdx];
     curIdx += direction;
   }
   // }
   return;
 }
 
-let generatePossibleAt = (idx, direction, prevCorrect) => {
-  let spots = [];
-  for (let i = 0; i < numTiles; ++i) {
-    spots.push(boardState.visible[i]);
-  }
-  // let remainingShips = [];
+let validShips = new Set();
+validShips.add(CARRIER);
+validShips.add(BATTLESHIP);
+validShips.add(SUBMARINE1);
+validShips.add(SUBMARINE2);
+validShips.add(DESTROYER);
 
-  // if (!shipHits.carrier.sunk && (prevCorrect <= CARRIER)) {
-  //   remainingShips.push(CARRIER);
-  // }
-  // if (!shipHits.battleship.sunk && (prevCorrect < BATTLESHIP)) {
-  //   remainingShips.push(BATTLESHIP);
-  // }
-  // if (!shipHits.submarine1.sunk && (prevCorrect < SUBMARINE1)) {
-  //   remainingShips.push(SUBMARINE1);
-  // }
-  // if (!shipHits.submarine2.sunk && (prevCorrect < SUBMARINE1)) {
-  //   remainingShips.push(SUBMARINE2);
-  // }
-  // if (!shipHits.destroyer.sunk && (prevCorrect < DESTROYER)) {
-  //   remainingShips.push(DESTROYER);
-  // }
-
-  // let randomShip = remainingShips[randomInt(remainingShips.length)];
-  // let secondSub = false;
-  // if (randomShip === SUBMARINE2) {
-  //   secondSub = true;
-  //   randomShip = SUBMARINE1;
-  // }
-  // placeShipFromTo(randomShip - prevCorrect, spots, secondSub, idx, direction);
-  // placeShipFromTo(randomShip, spots, secondSub, idx, direction * -1);
-
+let generatePossibleAt = (board, idx, direction, prevCorrect) => {
   idx += direction;
+  if (!invalidSpot.has(board[idx])) {
+    let spots = [];
+    for (let i = 0; i < numTiles; ++i) {
+      spots.push(board[i]);
+    }
+    // let remainingShips = [];
 
-  if (!shipHits.carrier.sunk && (prevCorrect <= CARRIER)) {
-    placeShipFromTo(CARRIER - prevCorrect, spots, false, idx, direction);
-    placeShipFromTo(CARRIER, spots, false, idx, direction * -1);
-  }
-  if (!shipHits.battleship.sunk && (prevCorrect < BATTLESHIP)) {
-    placeShipFromTo(BATTLESHIP - prevCorrect, spots, false, idx, direction);
-    placeShipFromTo(BATTLESHIP, spots, false, idx, direction * -1);
-  }
-  if (!shipHits.submarine1.sunk && (prevCorrect < SUBMARINE1)) {
-    placeShipFromTo(SUBMARINE1 - prevCorrect, spots, false, idx, direction);
-    placeShipFromTo(SUBMARINE1, spots, false, idx, direction * -1);
-  }
-  if (!shipHits.submarine2.sunk && (prevCorrect < SUBMARINE1)) {
-    placeShipFromTo(SUBMARINE1 - prevCorrect, spots, true, idx, direction);
-    placeShipFromTo(SUBMARINE1, spots, true, idx, direction * -1);
-  }
-  if (!shipHits.destroyer.sunk && (prevCorrect < DESTROYER)) {
-    placeShipFromTo(DESTROYER - prevCorrect, spots, false, idx, direction);
-    placeShipFromTo(DESTROYER, spots, false, idx, direction * -1);
-  }
+    // if (!shipHits.carrier.sunk && (prevCorrect <= CARRIER)) {
+    //   remainingShips.push(CARRIER);
+    // }
+    // if (!shipHits.battleship.sunk && (prevCorrect < BATTLESHIP)) {
+    //   remainingShips.push(BATTLESHIP);
+    // }
+    // if (!shipHits.submarine1.sunk && (prevCorrect < SUBMARINE1)) {
+    //   remainingShips.push(SUBMARINE1);
+    // }
+    // if (!shipHits.submarine2.sunk && (prevCorrect < SUBMARINE1)) {
+    //   remainingShips.push(SUBMARINE2);
+    // }
+    // if (!shipHits.destroyer.sunk && (prevCorrect < DESTROYER)) {
+    //   remainingShips.push(DESTROYER);
+    // }
 
-  return spots;
+    // let randomShip = remainingShips[randomInt(remainingShips.length)];
+    // let secondSub = false;
+    // if (randomShip === SUBMARINE2) {
+    //   secondSub = true;
+    //   randomShip = SUBMARINE1;
+    // }
+    // placeShipFromTo(randomShip - prevCorrect, spots, secondSub, idx, direction);
+    // placeShipFromTo(randomShip, spots, secondSub, idx, direction * -1);
+
+
+    let shipsUsed = 0;
+    if (!shipHits.carrier.sunk && (prevCorrect <= CARRIER)) {
+      ++shipsUsed;
+      placeShipFromTo(CARRIER - prevCorrect, spots, false, idx, direction);
+      placeShipFromTo(CARRIER, spots, false, idx, (direction * -1));
+    }
+    if (!shipHits.battleship.sunk && (prevCorrect < BATTLESHIP)) {
+      ++shipsUsed;
+      placeShipFromTo(BATTLESHIP - prevCorrect, spots, false, idx, direction);
+      placeShipFromTo(BATTLESHIP, spots, false, idx, (direction * -1));
+    }
+    if (!shipHits.submarine1.sunk && (prevCorrect < SUBMARINE1)) {
+      ++shipsUsed;
+      placeShipFromTo(SUBMARINE1 - prevCorrect, spots, false, idx, direction);
+      placeShipFromTo(SUBMARINE1, spots, false, idx, (direction * -1));
+    }
+    if (!shipHits.submarine2.sunk && (prevCorrect < SUBMARINE1)) {
+      ++shipsUsed;
+      placeShipFromTo(SUBMARINE1 - prevCorrect, spots, true, idx, direction);
+      placeShipFromTo(SUBMARINE1, spots, true, idx, (direction * -1));
+    }
+    if (!shipHits.destroyer.sunk && (prevCorrect < DESTROYER)) {
+      ++shipsUsed;
+      placeShipFromTo(DESTROYER - prevCorrect, spots, false, idx, direction);
+      placeShipFromTo(DESTROYER, spots, false, idx, (direction * -1));
+    }
+
+    for (let i = 12; i < numTiles; ++i ) {
+      if (spots[i]) {
+        if (spots[i] === MISS || spots[i] === DESTROYED) {
+          spots[i] = 0;
+        } else if (spots[i] === HIT) {
+          spots[i] = 10;
+        }
+      }
+
+
+      //  else if (spots[i] === MISS || spots[i] === DESTROYED) {
+      //   spots[i] = 0;
+      // };
+    }
+
+    return spots;
+  }
+  return [];
 }
 
-let aggregateOnHit = (hitIdx, direction, prevCorrect) => {
+let aggregateOnHit = (board, hitIdx, direction, prevCorrect) => {
   let prevAggregateBoard = aggregateBoard.childNodes;
   let prevLen = prevAggregateBoard.length;
   for (let i = 0; i < prevLen; ++i) {
@@ -579,12 +617,13 @@ let aggregateOnHit = (hitIdx, direction, prevCorrect) => {
   for (let i = 0; i < numTiles; ++i) {
     aggregate.push(0);
   }
-  const numTests = 1000;
+  const numTests = 10;
   for (let i = 0; i < numTests; ++i) {
-    let possible = generatePossibleAt(hitIdx, direction, prevCorrect);
+    let possible = generatePossibleAt(board, hitIdx, direction, prevCorrect);
     for (let j = 0; j < numTiles; ++j) {
       if (possible[j] && (/*possible[j] !== HIT && */possible[j] !== MISS && possible[j] !== DESTROYED)) {
-        ++aggregate[j];
+        // ++aggregate[j];
+        aggregate[j] = possible[j];
       }
     }
   }
@@ -624,28 +663,29 @@ let inRange = (idx) => {
   return (idx >= 12) && (idx <= 120);
 }
 
-let tryDirection = async (curIdx, increment, tiles, correctCount) => {
+let tryDirection = async (board, curIdx, increment, tiles, correctCount) => {
   curIdx += increment;
   if (inRange(curIdx)) {
     await sleep(SLEEPTIME);
     tiles[curIdx].click();
-    // aggregateSets(boardState);
+    aggregateSets(board);
 
-    while (boardState.visible[curIdx] === HIT) {
+    while (board[curIdx] === HIT) {
       ++correctCount;
-      aggregateOnHit(curIdx, increment, correctCount);
-
+      // aggregateOnHit(board, curIdx, increment, correctCount);
+      aggregateSets(board);
 
       curIdx += increment;
       await sleep(SLEEPTIME);
       if (inRange(curIdx)) {
         tiles[curIdx].click();
+        aggregateSets(board);
       } else {
         return correctCount;
       }
-
+      
     }
-    // aggregateSets(boardState);
+    
     return correctCount;
   } else {
 
@@ -653,56 +693,142 @@ let tryDirection = async (curIdx, increment, tiles, correctCount) => {
   }
 }
 
-let seekDestroy = async (startingIdx, tiles) => {
+let combineAggregate = (...boards) => {
+  let final = [];
+  for (let i = 0; i < numTiles; ++i) {
+    final.push(0);
+  }
+  for (const board of boards) {
+    for (let i = 0; i < numTiles; ++i) {
+      if (validShips.has(board[i]));
+      final[i] += board[i];
+    }
+  }
+  let boardCount = boards.length;
+  for (let i = 0; i < numTiles; ++i) {
+    if (final[i] !== MISS || final[i] !== DESTROYED) {
+      final[i] /= boardCount;
+    }
+    
+  }
+  return final;
+}
+
+let aggregateHitAllDirections = (board, hitIdx, prevCorrect) => {
+  let prevAggregateBoard = aggregateBoard.childNodes;
+  let prevLen = prevAggregateBoard.length;
+  for (let i = 0; i < prevLen; ++i) {
+    prevAggregateBoard[0].remove();
+  }
+
+  let aggregate = [];
+  for (let i = 0; i < numTiles; ++i) {
+    aggregate.push(0);
+  }
+
+  const numTests = 10;
+  for (let i = 0; i < numTests; ++i) {
+    let possibleUp = generatePossibleAt(board, hitIdx, UP, prevCorrect);
+    let possibleDown = generatePossibleAt(board, hitIdx, DOWN, prevCorrect);
+    let possibleRight = generatePossibleAt(board, hitIdx, RIGHT, prevCorrect);
+    let possibleLeft = generatePossibleAt(board, hitIdx, LEFT, prevCorrect);
+    let possibleAll = combineAggregate(possibleUp, possibleDown, possibleRight, possibleLeft);
+    console.log('all directions', possibleAll);
+    for (let j = 0; j < numTiles; ++j) {
+      if (possibleAll[j] && (possibleAll[j] !== HIT && possibleAll[j] !== MISS && possibleAll[j] !== DESTROYED)) {
+        // ++aggregate[j];
+        aggregate[j] = possibleAll[j];
+      }
+    }
+  }
+
+  let temp = document.createElement('div');
+  temp.classList.add('board-item');
+  aggregateBoard.appendChild(temp);
+  for (let i = 1; i < 11; ++i) {
+    let temp = document.createElement('div');
+    temp.classList.add('board-item');
+    aggregateBoard.appendChild(temp);
+    temp.innerText = i;
+  }
+
+  let letter = 65;
+  for (let i = 11; i < numTiles; i += 11) {
+    let temp = document.createElement('div');
+    temp.classList.add('board-item');
+    temp.innerText = String.fromCharCode(letter);
+    ++letter;
+    aggregateBoard.appendChild(temp);
+    for (let j = 1; j <= 10; ++j) {
+      let item = document.createElement('div');
+      let index = i + j;
+      let value = +aggregate[index] / numTests;
+
+      item.style.background = heatMapColorforValue(value);
+      item.classList.add('board-item');
+      aggregateBoard.appendChild(item);
+    }
+
+  }
+}
+
+let seekDestroy = async (board, startingIdx, tiles) => {
 
   let curIdx = startingIdx;
   let correctCount = 1;
 
   if (inRange(startingIdx + RIGHT) && !shipAt(startingIdx + RIGHT)) {
-    await tryDirection(curIdx, RIGHT, tiles, correctCount).then(result => { correctCount = result });
+    await tryDirection(board, curIdx, RIGHT, tiles, correctCount).then(result => { 
+      correctCount = result;
+      // aggregateHitAllDirections(board, startingIdx, correctCount);
+    });
     curIdx = startingIdx;
-    if (boardState.visible[startingIdx] === DESTROYED) {
+    if (board[startingIdx] === DESTROYED) {
       return;
     }
   }
 
-  console.log(correctCount);
+  
 
   if (inRange(startingIdx + LEFT) && !shipAt(startingIdx + LEFT)) {
-    await tryDirection(curIdx, LEFT, tiles, correctCount).then(result => { correctCount = result });
+    await tryDirection(board, curIdx, LEFT, tiles, correctCount).then(result => { 
+      correctCount = result;
+      // aggregateHitAllDirections(board, startingIdx, correctCount);
+    });
     curIdx = startingIdx;
-    if (boardState.visible[startingIdx] === DESTROYED) {
+    if (board[startingIdx] === DESTROYED) {
       return;
     }
   }
 
-  console.log(correctCount);
 
   if (inRange(startingIdx + UP) && !shipAt(startingIdx + UP)) {
-    await tryDirection(curIdx, UP, tiles, correctCount).then(result => { correctCount = result });
+    await tryDirection(board, curIdx, UP, tiles, correctCount).then(result => { 
+      correctCount = result;
+      // aggregateHitAllDirections(board, startingIdx, correctCount);
+    });
     curIdx = startingIdx;
-    if (boardState.visible[startingIdx] === DESTROYED) {
+    if (board[startingIdx] === DESTROYED) {
       return;
     }
   }
 
-  console.log(correctCount);
 
   if (inRange(startingIdx + DOWN) && !shipAt(startingIdx + DOWN)) {
-    await tryDirection(curIdx, DOWN, tiles, correctCount).then(result => { correctCount = result });
+    await tryDirection(board, curIdx, DOWN, tiles, correctCount).then(result => { 
+      correctCount = result;
+    });
     curIdx = startingIdx;
-    if (boardState.visible[startingIdx] === DESTROYED) {
+    if (board[startingIdx] === DESTROYED) {
       return;
     }
   }
-
-  console.log(correctCount);
 
 }
 
 let aiMoves = async () => {
   let tiles = boardNode.childNodes;
-  let idx = aggregateSets(boardState);
+  let idx = aggregateSets(boardState.visible);
 
   while (!won) {
 
@@ -715,12 +841,13 @@ let aiMoves = async () => {
     }
 
     if (boardState.visible[idx] === HIT) {
-
-      await seekDestroy(idx, tiles);
+      aggregateSets(boardState.visible);
+      // aggregateHitAllDirections(boardState.visible, idx, 1);
+      await seekDestroy(boardState.visible, idx, tiles);
 
     }
 
-    idx = aggregateSets(boardState);
+    idx = aggregateSets(boardState.visible);
     console.log(idx);
 
   }
