@@ -274,7 +274,7 @@ let handleMove = (event) => {
     clickedItem.classList.add('miss');
     boardState.visible[index] = MISS;
   }
-  
+
   turnCount.innerText = +turnCount.innerText + 1;
 
 }
@@ -515,32 +515,56 @@ let generatePossibleAt = (idx, direction, prevCorrect) => {
   for (let i = 0; i < numTiles; ++i) {
     spots.push(boardState.visible[i]);
   }
-  let remainingShips = [];
+  // let remainingShips = [];
+
+  // if (!shipHits.carrier.sunk && (prevCorrect <= CARRIER)) {
+  //   remainingShips.push(CARRIER);
+  // }
+  // if (!shipHits.battleship.sunk && (prevCorrect < BATTLESHIP)) {
+  //   remainingShips.push(BATTLESHIP);
+  // }
+  // if (!shipHits.submarine1.sunk && (prevCorrect < SUBMARINE1)) {
+  //   remainingShips.push(SUBMARINE1);
+  // }
+  // if (!shipHits.submarine2.sunk && (prevCorrect < SUBMARINE1)) {
+  //   remainingShips.push(SUBMARINE2);
+  // }
+  // if (!shipHits.destroyer.sunk && (prevCorrect < DESTROYER)) {
+  //   remainingShips.push(DESTROYER);
+  // }
+
+  // let randomShip = remainingShips[randomInt(remainingShips.length)];
+  // let secondSub = false;
+  // if (randomShip === SUBMARINE2) {
+  //   secondSub = true;
+  //   randomShip = SUBMARINE1;
+  // }
+  // placeShipFromTo(randomShip - prevCorrect, spots, secondSub, idx, direction);
+  // placeShipFromTo(randomShip, spots, secondSub, idx, direction * -1);
+
+  idx += direction;
 
   if (!shipHits.carrier.sunk && (prevCorrect <= CARRIER)) {
-    remainingShips.push(CARRIER);
+    placeShipFromTo(CARRIER - prevCorrect, spots, false, idx, direction);
+    placeShipFromTo(CARRIER, spots, false, idx, direction * -1);
   }
   if (!shipHits.battleship.sunk && (prevCorrect < BATTLESHIP)) {
-    remainingShips.push(BATTLESHIP);
+    placeShipFromTo(BATTLESHIP - prevCorrect, spots, false, idx, direction);
+    placeShipFromTo(BATTLESHIP, spots, false, idx, direction * -1);
   }
   if (!shipHits.submarine1.sunk && (prevCorrect < SUBMARINE1)) {
-    remainingShips.push(SUBMARINE1);
+    placeShipFromTo(SUBMARINE1 - prevCorrect, spots, false, idx, direction);
+    placeShipFromTo(SUBMARINE1, spots, false, idx, direction * -1);
   }
   if (!shipHits.submarine2.sunk && (prevCorrect < SUBMARINE1)) {
-    remainingShips.push(SUBMARINE2);
+    placeShipFromTo(SUBMARINE1 - prevCorrect, spots, true, idx, direction);
+    placeShipFromTo(SUBMARINE1, spots, true, idx, direction * -1);
   }
   if (!shipHits.destroyer.sunk && (prevCorrect < DESTROYER)) {
-    remainingShips.push(DESTROYER);
+    placeShipFromTo(DESTROYER - prevCorrect, spots, false, idx, direction);
+    placeShipFromTo(DESTROYER, spots, false, idx, direction * -1);
   }
 
-  let randomShip = remainingShips[randomInt(remainingShips.length)];
-  let secondSub = false;
-  if (randomShip === SUBMARINE2) {
-    secondSub = true;
-    randomShip = SUBMARINE1;
-  }
-  placeShipFromTo(randomShip - prevCorrect, spots, secondSub, idx, direction);
-  placeShipFromTo(randomShip, spots, secondSub, idx, direction * -1);
   return spots;
 }
 
@@ -747,7 +771,7 @@ resetBtn.onclick = () => {
   statsBar.appendChild(savePlayer);
   resetForAi(boardState);
 
-  
+
 }
 
 startAIBtn.onclick = async () => {
