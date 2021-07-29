@@ -1,4 +1,5 @@
-let boardNode = document.getElementById('main-board');
+let boardBar = document.getElementById('board-bar');
+let mainBoard = document.getElementById('main-board');
 let hidden = document.getElementById('internal-board');
 let status = document.getElementById('game-status');
 let turnCount = document.getElementById('turn-count');
@@ -6,6 +7,7 @@ let resetBtn = document.getElementById('reset');
 let startAIBtn = document.getElementById('start-ai');
 let aggregateBoard = document.getElementById('aggregate-board');
 let statsBar = document.getElementById('stats');
+let matchHistory = document.getElementById('match-history');
 
 const numTiles = 100 + 21; // 21 for extra spaces for legends
 const DEFAULT = 0;
@@ -94,40 +96,26 @@ let placeShip = (length, board, secondSub, saveLocations, locationArr) => {
   let originIdx = getIdx(length, orientation);
   let index = originIdx;
   let maxTries = 100;
+  let increment;
   if (orientation === HORIZONTAL) {
-    // place horizontal
-    let tryCount = 0;
-    while ((tryCount < maxTries) && !placeable) {
-      ++tryCount;
-      for (let j = 0; j < length; ++j) {
-        if (shipAt(board, index)) {
-          originIdx = getIdx(length, orientation);
-          index = originIdx;
-          break;
-        } else if (j === (length - 1)) {
-          placeable = true;
-          break;
-        }
-        ++index;
-      }
-    }
-
+    increment = 1;
   } else {
-    // place vertical
-    let tryCount = 0;
-    while ((tryCount < maxTries) && !placeable) {
-      ++tryCount;
-      for (let j = 0; j < length; ++j) {
-        if (shipAt(board, index)) {
-          originIdx = getIdx(length, orientation);
-          index = originIdx;
-          break;
-        } else if (j === (length - 1)) {
-          placeable = true;
-          break;
-        }
-        index += COLUMNS;
+    increment = COLUMNS;
+  }
+
+  let tryCount = 0;
+  while ((tryCount < maxTries) && !placeable) {
+    ++tryCount;
+    for (let j = 0; j < length; ++j) {
+      if (shipAt(board, index)) {
+        originIdx = getIdx(length, orientation);
+        index = originIdx;
+        break;
+      } else if (j === (length - 1)) {
+        placeable = true;
+        break;
       }
+      index += increment;
     }
   }
   if (placeable) {
@@ -149,10 +137,6 @@ let placeShip = (length, board, secondSub, saveLocations, locationArr) => {
 
     }
   }
-
-
-
-
 }
 
 let initBoard = (board) => {
@@ -191,12 +175,21 @@ let boardState = {
 }
 
 let checkWin = () => {
-  // return (shipHits.carrier.hits === 5) && (shipHits.battleship.hits === 4) && (shipHits.submarine1.hits === 3) && (shipHits.submarine2.hits === 3) && (shipHits.destroyer.hits === 2);
   return shipHits.carrier.sunk && shipHits.battleship.sunk && shipHits.submarine1.sunk && shipHits.submarine2.sunk && shipHits.destroyer.sunk;
 }
 
+let handleWin = () => {
+  won = true;
+  mainBoard.style.background = "#11ab68";
+  let tiles = mainBoard.childNodes;
+  for (let i = 0; i < numTiles; ++i) {
+    tiles[i].removeEventListener('click', handleMove);
+    tiles[i].style.cursor = 'default'
+  }
+}
+
 let checkDestroy = (ship) => {
-  let tiles = boardNode.childNodes;
+  let tiles = mainBoard.childNodes;
   for (const index of shipLocations[ship]) {
     // for (const className of tiles[index].classList) {
     //   if (className === 'default') {
@@ -208,7 +201,7 @@ let checkDestroy = (ship) => {
     }
   }
   // destroyed
-  console.log('destroyed');
+  // console.log('destroyed');
 
   for (const index of shipLocations[ship]) {
     tiles[index].classList.add('destroyed');
@@ -234,9 +227,7 @@ let checkDestroy = (ship) => {
   }
 
   if (checkWin()) {
-    won = true;
-    boardNode.style.background = "#11ab68"
-    console.log('DONE');
+    handleWin();
   };
   return true;
 
@@ -282,12 +273,12 @@ let handleMove = (event) => {
 let displayBoard = (board) => {
   let boardLength = board.visible.length;
   let temp = document.createElement('div');
-  boardNode.appendChild(temp);
+  mainBoard.appendChild(temp);
   for (let i = 1; i < 11; ++i) {
     let item = document.createElement('div');
     item.classList.add('board-item');
     item.innerText = board.visible[i]
-    boardNode.appendChild(item);
+    mainBoard.appendChild(item);
   }
   for (let i = 11; i < boardLength; ++i) {
     let item = document.createElement('div');
@@ -299,7 +290,7 @@ let displayBoard = (board) => {
     } else {
       item.innerText = board.visible[i];
     }
-    boardNode.appendChild(item);
+    mainBoard.appendChild(item);
   }
 
 }
@@ -334,7 +325,7 @@ const sleep = (milliseconds) => {
 
 // let randomMoves = async () => {
 //   let tried = new Set();
-//   let children = boardNode.childNodes;
+//   let children = mainBoard.childNodes;
 //   while (!won) {
 //     console.log('moving');
 //     let index = randomInt(numTiles);
@@ -412,9 +403,9 @@ let aggregateSets = (board) => {
       }
     }
   }
-  console.log('after tests');
+  // console.log('after tests');
   let temp = document.createElement('div');
-  temp.classList.add('board-item');
+  // temp.classList.add('board-item');
   aggregateBoard.appendChild(temp);
   for (let i = 1; i < 11; ++i) {
     let temp = document.createElement('div');
@@ -733,7 +724,7 @@ let aggregateHitAllDirections = (board, hitIdx, prevCorrect) => {
     let possibleRight = generatePossibleAt(board, hitIdx, RIGHT, prevCorrect);
     let possibleLeft = generatePossibleAt(board, hitIdx, LEFT, prevCorrect);
     let possibleAll = combineAggregate(possibleUp, possibleDown, possibleRight, possibleLeft);
-    console.log('all directions', possibleAll);
+    // console.log('all directions', possibleAll);
     for (let j = 0; j < numTiles; ++j) {
       if (possibleAll[j] && (possibleAll[j] !== HIT && possibleAll[j] !== MISS && possibleAll[j] !== DESTROYED)) {
         // ++aggregate[j];
@@ -777,7 +768,8 @@ let seekDestroy = async (board, startingIdx, tiles) => {
   let curIdx = startingIdx;
   let correctCount = 1;
 
-  if (inRange(startingIdx + RIGHT) && !shipAt(startingIdx + RIGHT)) {
+
+  if (inRange(startingIdx + RIGHT) && !shipAt(board, startingIdx + RIGHT)) {
     await tryDirection(board, curIdx, RIGHT, tiles, correctCount).then(result => { 
       correctCount = result;
       // aggregateHitAllDirections(board, startingIdx, correctCount);
@@ -790,7 +782,7 @@ let seekDestroy = async (board, startingIdx, tiles) => {
 
   
 
-  if (inRange(startingIdx + LEFT) && !shipAt(startingIdx + LEFT)) {
+  if (inRange(startingIdx + LEFT) && !shipAt(board, startingIdx + LEFT)) {
     await tryDirection(board, curIdx, LEFT, tiles, correctCount).then(result => { 
       correctCount = result;
       // aggregateHitAllDirections(board, startingIdx, correctCount);
@@ -802,7 +794,7 @@ let seekDestroy = async (board, startingIdx, tiles) => {
   }
 
 
-  if (inRange(startingIdx + UP) && !shipAt(startingIdx + UP)) {
+  if (inRange(startingIdx + UP) && !shipAt(board, startingIdx + UP)) {
     await tryDirection(board, curIdx, UP, tiles, correctCount).then(result => { 
       correctCount = result;
       // aggregateHitAllDirections(board, startingIdx, correctCount);
@@ -814,7 +806,7 @@ let seekDestroy = async (board, startingIdx, tiles) => {
   }
 
 
-  if (inRange(startingIdx + DOWN) && !shipAt(startingIdx + DOWN)) {
+  if (inRange(startingIdx + DOWN) && !shipAt(board, startingIdx + DOWN)) {
     await tryDirection(board, curIdx, DOWN, tiles, correctCount).then(result => { 
       correctCount = result;
     });
@@ -827,7 +819,7 @@ let seekDestroy = async (board, startingIdx, tiles) => {
 }
 
 let aiMoves = async () => {
-  let tiles = boardNode.childNodes;
+  let tiles = mainBoard.childNodes;
   let idx = aggregateSets(boardState.visible);
 
   while (!won) {
@@ -848,12 +840,10 @@ let aiMoves = async () => {
     }
 
     idx = aggregateSets(boardState.visible);
-    console.log(idx);
+    // console.log(idx);
 
   }
 }
-
-
 
 let resetForAi = (board) => {
   board.visible.length = 0;
@@ -879,34 +869,72 @@ let resetForAi = (board) => {
     submarine2: { hits: 0, sunk: false },
     destroyer: { hits: 0, sunk: false }
   };
-  let tiles = boardNode.childNodes;
+  let tiles = mainBoard.childNodes;
   let length = tiles.length;
   for (let i = 0; i < length; ++i) {
     tiles[0].remove();
   }
-  boardNode.style.background = "#ddd";
+  mainBoard.style.background = "#ddd";
   displayBoard(boardState);
 }
 
-
-
+let playerTurns;
+let aiTurns;
 
 resetBtn.onclick = () => {
-  let playerTurns = turnCount.innerText;
-  let savePlayer = document.createElement('span');
-  savePlayer.innerText = `Your amount of turns: ${playerTurns}`;
-  statsBar.appendChild(savePlayer);
+  playerTurns = turnCount.innerText;
+  // let savePlayer = document.createElement('span');
+  // savePlayer.innerText = `Your amount of turns: ${playerTurns}`;
+  // statsBar.appendChild(savePlayer);
   resetForAi(boardState);
-
-
 }
 
 startAIBtn.onclick = async () => {
+  if (!won) {
+    return;
+  }
+  resetBtn.click();
+  aggregateBoard.style.display = 'grid';
   await aiMoves();
-  let aiTurns = turnCount.innerText;
-  let saveAI = document.createElement('span');
-  saveAI.innerText = `AI's amount of turns: ${aiTurns}`;
-  statsBar.appendChild(saveAI);
+  aiTurns = turnCount.innerText;
+  // let saveAI = document.createElement('span');
+  // saveAI.innerText = `AI's amount of turns: ${aiTurns}`;
+  // statsBar.appendChild(saveAI);
+  displayMatch(playerTurns, aiTurns);
 }
 
+let displayMatch = (playerCount, aiCount) => {
+  let matchCard = document.createElement('li');
+  matchCard.classList.add('match');
+  matchCard.innerHTML = `<div>Your turns: ${playerCount} | AI's turns: ${aiCount}</div>`;
+  if (playerCount <= aiCount) {
+    matchCard.style.background = '#97d986';
+  } else {
+    matchCard.style.background = '#ab6161';
+  }
+  matchHistory.appendChild(matchCard);
+}
+
+let newGame = (board) => {
+  initBoard(board);
+}
+
+aggregateBoard.style.display = 'none';
 // displayInternal(boardState);
+
+// displayMatch(0, 0);
+// displayMatch(1, 0);
+
+let clickAll = () => {
+  let tiles = mainBoard.childNodes;
+  for (let i = 0; i < numTiles; ++i) {
+    tiles[i].click();
+  }
+
+}
+
+let autoWin = document.getElementById('auto-win');
+
+autoWin.onclick = () => {
+  clickAll();
+}
