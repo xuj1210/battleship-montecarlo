@@ -831,7 +831,7 @@ let aiMoves = async () => {
   let cover = document.createElement('div');
   cover.style.position = 'absolute';
   cover.style.height = `${boardBar.offsetHeight}px`;
-  cover.style.width = '100vw';
+  cover.style.width = `${boardBar.offsetWidth}px`;
   boardBar.appendChild(cover);
 
   let tiles = mainBoard.childNodes;

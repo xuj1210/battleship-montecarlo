@@ -14,11 +14,20 @@
       font-family: 'Roboto', sans-serif;
     }
 
+    body {
+      background: rgb(251, 252, 237);
+    }
+
     #game-wrapper {
       
       text-align: center;
       padding-bottom: 2em;
-      
+      background-color: rgb(163, 183, 240);
+      border-radius: 15px;
+      box-shadow: 0 10px 15px rgb(0 0 0 / 19%), 0 6px 6px rgb(0 0 0 / 23%);
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     #board-bar {
@@ -29,13 +38,8 @@
       margin-right: auto;
       flex-wrap: wrap;
       justify-content: center;
-
-      background-color: #ddd;
-      width: 90%;
-      margin-left: auto;
-      margin-right: auto;
-      border-radius: 15px;
-      box-shadow: 0 10px 15px rgb(0 0 0 / 19%), 0 6px 6px rgb(0 0 0 / 23%);
+      padding: 1em;
+      
 
     }
 
@@ -45,10 +49,11 @@
       grid-template-rows: repeat(11, 3.5vw);
       /* background-color: #ddd; */
       padding: 1rem;
-      margin: 1rem;
+
       justify-content: center;
       grid-gap: 2px;
       border-radius: 8px;
+      /* border: 1px solid black; */
     }
 
     .board-item {
@@ -60,18 +65,19 @@
 
       font-size: 1.3em;
       text-align: center;
-      border-radius: 3px;
+      border-radius: 6%;
+      margin: 1.2%;
       border: none;
     }
 
     .counter {
       position: relative;
       border-radius: 8px;
-      font-weight: bold;
+      font-weight: 400;
       background: lavenderblush;
-      padding: 1em;
+      padding: 0.5em 1em 0.5em 1em;
       margin: 1em;
-      border: 2px solid black;
+      border: 1px solid #222;
       z-index: 1000;
     }
 
@@ -152,9 +158,9 @@
   <!-- <div id="game-status"></div> -->
   <div id="game-wrapper">
     <div id="board-bar">
-      <div id="main-board" class="board-container"></div>
+      <span id="main-board" class="board-container"></span>
       <!-- <div class="board-container" id="internal-board"></div> -->
-      <div id="aggregate-board" class="board-container"></div>
+      <dispanv id="aggregate-board" class="board-container"></span>
     </div>
     <span class="counter">Turn: 
       <span id="turn-count">0</span>
