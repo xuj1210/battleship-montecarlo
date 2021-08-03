@@ -897,19 +897,21 @@ let resetBoard = (board) => {
 let playerTurns;
 let aiTurns;
 
-resetBtn.onclick = () => {
-  playerTurns = turnCount.innerText;
-  // let savePlayer = document.createElement('span');
-  // savePlayer.innerText = `Your amount of turns: ${playerTurns}`;
-  // statsBar.appendChild(savePlayer);
-  resetBoard(boardState);
-}
+// resetBtn.onclick = () => {
+  
+//   // let savePlayer = document.createElement('span');
+//   // savePlayer.innerText = `Your amount of turns: ${playerTurns}`;
+//   // statsBar.appendChild(savePlayer);
+  
+// }
 
 startAIBtn.onclick = async () => {
   if (!won) {
     return;
   }
-  resetBtn.click();
+  playerTurns = turnCount.innerText;
+  resetBoard(boardState);
+  
   aggregateBoard.style.display = 'grid';
   await aiMoves();
   aiTurns = turnCount.innerText;
@@ -957,5 +959,7 @@ let newGame = (game) => {
 }
 
 newGameBtn.onclick = () => {
+  won = true;
+  aggregateBoard.style.display = 'none';
   newGame(boardState);
 }
