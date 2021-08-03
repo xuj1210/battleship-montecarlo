@@ -1,13 +1,14 @@
 let boardBar = document.getElementById('board-bar');
 let mainBoard = document.getElementById('main-board');
 let hidden = document.getElementById('internal-board');
-let status = document.getElementById('game-status');
+// let status = document.getElementById('game-status');
 let turnCount = document.getElementById('turn-count');
 let resetBtn = document.getElementById('reset');
 let startAIBtn = document.getElementById('start-ai');
 let aggregateBoard = document.getElementById('aggregate-board');
 let statsBar = document.getElementById('stats');
 let matchHistory = document.getElementById('match-history');
+let newGameBtn = document.getElementById('new-game');
 
 const numTiles = 100 + 21; // 21 for extra spaces for legends
 const DEFAULT = 0;
@@ -87,7 +88,7 @@ let getIdx = (length, orientation) => {
 
 // let placedFirstSub = false;
 
-let shipLocations = [-1, -1, [], [], [], [], []];
+let shipLocations;
 
 let placeShip = (length, board, secondSub, saveLocations, locationArr) => {
 
@@ -157,7 +158,7 @@ let initBoard = (board) => {
     board.visible[i * COLUMNS] = String.fromCharCode(64 + i);
     board.internal[i * COLUMNS] = INVALID;
   }
-
+  shipLocations = [-1, -1, [], [], [], [], []];
   // place ships
   for (let i = 5; i >= 2; --i) {
     if (i !== 3) {
@@ -310,12 +311,12 @@ let displayInternal = (board) => {
   }
 }
 
-status.innerText = 'INITIALIZING';
+// status.innerText = 'INITIALIZING';
 initBoard(boardState);
 displayBoard(boardState);
 // displayInternal(boardState);
 
-status.innerText = 'READY';
+// status.innerText = 'READY';
 
 const sleep = (milliseconds) => {
   return new Promise(resolve => setTimeout(resolve, milliseconds))
@@ -481,12 +482,12 @@ let placeShipFromTo = (length, board, secondSub, idx, direction) => {
   // } else {
   //   increment = RIGHT;
   // }
-  if (!inRange(curIdx) || lettersNumbers.has(board[curIdx])) {
+  if (!inRange(curIdx) || invalidSpot.has(board[curIdx])) {
     return;
   }
   for (let i = 0; i < length; ++i) {
     curIdx += direction;
-    if (!inRange(curIdx) || lettersNumbers.has(board[curIdx]) || board[curIdx] === MISS || board[curIdx] === DESTROYED) {
+    if (!inRange(curIdx) || invalidSpot.has(board[curIdx]) || board[curIdx] === MISS || board[curIdx] === DESTROYED) {
       return;
     }
     //  else if (i === (length - 1)) {
@@ -685,19 +686,27 @@ let tryDirection = async (board, curIdx, increment, tiles, correctCount) => {
 }
 
 let combineAggregate = (...boards) => {
+  let boardCount = boards.length;
+  if (boardCount <= 0) {
+    return;
+  }
   let final = [];
   for (let i = 0; i < numTiles; ++i) {
     final.push(0);
   }
   for (const board of boards) {
+    console.log(board);
     for (let i = 0; i < numTiles; ++i) {
-      if (validShips.has(board[i]));
-      final[i] += board[i];
+      console.log(board);
+      if (validShips.has(board[i])) {
+        ++final[i];
+      }
+      
     }
   }
-  let boardCount = boards.length;
+  
   for (let i = 0; i < numTiles; ++i) {
-    if (final[i] !== MISS || final[i] !== DESTROYED) {
+    if (final[i] !== MISS || final[i] !== DESTROYED || lettersNumbers.has(final[i])) {
       final[i] /= boardCount;
     }
     
@@ -767,7 +776,7 @@ let seekDestroy = async (board, startingIdx, tiles) => {
 
   let curIdx = startingIdx;
   let correctCount = 1;
-
+  // aggregateHitAllDirections(board, startingIdx, correctCount);
 
   if (inRange(startingIdx + RIGHT) && !shipAt(board, startingIdx + RIGHT)) {
     await tryDirection(board, curIdx, RIGHT, tiles, correctCount).then(result => { 
@@ -819,6 +828,12 @@ let seekDestroy = async (board, startingIdx, tiles) => {
 }
 
 let aiMoves = async () => {
+  let cover = document.createElement('div');
+  cover.style.position = 'absolute';
+  cover.style.height = `${boardBar.offsetHeight}px`;
+  cover.style.width = '100vw';
+  boardBar.appendChild(cover);
+
   let tiles = mainBoard.childNodes;
   let idx = aggregateSets(boardState.visible);
 
@@ -843,9 +858,10 @@ let aiMoves = async () => {
     // console.log(idx);
 
   }
+  cover.remove();
 }
 
-let resetForAi = (board) => {
+let resetBoard = (board) => {
   board.visible.length = 0;
   for (let i = 0; i < numTiles; ++i) {
     board.visible.push(DEFAULT);
@@ -886,7 +902,7 @@ resetBtn.onclick = () => {
   // let savePlayer = document.createElement('span');
   // savePlayer.innerText = `Your amount of turns: ${playerTurns}`;
   // statsBar.appendChild(savePlayer);
-  resetForAi(boardState);
+  resetBoard(boardState);
 }
 
 startAIBtn.onclick = async () => {
@@ -910,13 +926,9 @@ let displayMatch = (playerCount, aiCount) => {
   if (playerCount <= aiCount) {
     matchCard.style.background = '#97d986';
   } else {
-    matchCard.style.background = '#ab6161';
+    matchCard.style.background = '#e37171';
   }
   matchHistory.appendChild(matchCard);
-}
-
-let newGame = (board) => {
-  initBoard(board);
 }
 
 aggregateBoard.style.display = 'none';
@@ -937,4 +949,13 @@ let autoWin = document.getElementById('auto-win');
 
 autoWin.onclick = () => {
   clickAll();
+}
+
+let newGame = (game) => {
+  initBoard(game);
+  resetBoard(game);
+}
+
+newGameBtn.onclick = () => {
+  newGame(boardState);
 }
