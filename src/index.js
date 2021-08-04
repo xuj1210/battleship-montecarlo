@@ -890,7 +890,7 @@ let resetBoard = (board) => {
   for (let i = 0; i < length; ++i) {
     tiles[0].remove();
   }
-  mainBoard.style.background = "#ddd";
+  mainBoard.style.background = "initial";
   displayBoard(boardState);
 }
 
@@ -947,11 +947,11 @@ let clickAll = () => {
 
 }
 
-let autoWin = document.getElementById('auto-win');
+// let autoWin = document.getElementById('auto-win');
 
-autoWin.onclick = () => {
-  clickAll();
-}
+// autoWin.onclick = () => {
+//   clickAll();
+// }
 
 let newGame = (game) => {
   initBoard(game);
@@ -963,3 +963,6 @@ newGameBtn.onclick = () => {
   aggregateBoard.style.display = 'none';
   newGame(boardState);
 }
+
+displayMatch(10, 20);
+displayMatch(20, 10);
