@@ -15,13 +15,13 @@
     }
 
     body {
-      background: rgb(251, 252, 237);
+      background: #f8f8ff;
     }
 
     #game-wrapper {
 
       text-align: center;
-      padding-bottom: 2em;
+
       background-color: rgb(163, 183, 240);
       border-radius: 15px;
       box-shadow: 0 10px 15px rgb(0 0 0 / 19%), 0 6px 6px rgb(0 0 0 / 23%);
@@ -70,41 +70,42 @@
       border: none;
     }
 
+    #game-bar {
+      display: flex;
+      justify-content: space-around;
+      /* padding: 0.5em 0.5em; */
+    }
+
+    #buttons-balance {
+      visibility: hidden;
+
+    }
+
+    /* #button-bar {
+      padding-right: 3%;
+    } */
+
+    #start-ai {
+      visibility: hidden;
+    }
+
     .counter {
       position: relative;
       border-radius: 10%;
-      font-weight: 400;
-      background: lavenderblush;
-      padding: 0.5em 1em 0.5em 1em;
-      margin: 1em;
+      font-weight: 500;
+      font-size: 1.4em;
+
+      padding: 0.5em 0.5em 1.5em 0.5em;
+
+
+      color: #fbfbfb;
+      text-shadow: 1px 1px 1px rgba(0, 0, 0, .4);
+
 
       z-index: 1000;
     }
 
-    @media (max-width: 699px) {
-      .board-container {
-        grid-template-columns: repeat(11, 6vw);
-        grid-template-rows: repeat(11, 6vw);
-      }
 
-      .board-item {
-        font-size: 0.5em;
-      }
-
-      .counter {
-        font-size: 0.5em;
-      }
-    }
-
-    @media (min-width: 700px) and (max-width: 1149px) {
-      .board-item {
-        font-size: 1em;
-      }
-
-      .counter {
-        font-size: 1em;
-      }
-    }
 
 
 
@@ -139,8 +140,7 @@
     }
 
     button {
-      width: 130px;
-      height: 40px;
+
       background: linear-gradient(to bottom, #4eb5e5 0%, #389ed5 100%);
       /* W3C */
       border: none;
@@ -151,16 +151,18 @@
       /* font-weight: 600; */
       /* font-family: 'Open Sans', sans-serif; */
       text-shadow: 1px 1px 1px rgba(0, 0, 0, .4);
-      font-size: 15px;
-      text-align: left;
-      text-indent: 5px;
+      font-size: 1em;
+      text-align: center;
+      /* text-indent: 5px; */
       box-shadow: 0px 3px 0px 0px rgba(0, 0, 0, .2);
       cursor: pointer;
 
       /* Just for presentation */
-      display: block;
-      margin: 0 auto;
-      margin-bottom: 20px;
+      /* display: block; */
+      /* margin: 0 0.1em; */
+      /* margin-bottom: 20px; */
+      /* padding-right: 2.2em;
+      z-index: 10; */
     }
 
     button:active {
@@ -168,7 +170,7 @@
       top: 1px;
     }
 
-    button:after {
+    /* button:after {
       content: "";
       width: 0;
       height: 0;
@@ -182,43 +184,10 @@
       right: 0;
       top: 0;
       border-radius: 0 5px 5px 0;
-    }
+      z-index: 0;
+    } */
 
-    /* Button pointing left */
-
-    button.back {
-      text-align: right;
-      padding-right: 12px;
-      box-sizing: border-box;
-    }
-
-    button.back:after {
-      content: "";
-      width: 0;
-      height: 0;
-      display: block;
-      border-top: 20px solid #187dbc;
-      border-bottom: 20px solid #187dbc;
-      border-right: 16px solid transparent;
-      border-left: 20px solid #187dbc;
-      position: absolute;
-      opacity: 0.6;
-      left: 0;
-      top: 0;
-      border-radius: 5px 0 0 5px;
-    }
-
-    /* Single buttons */
-
-    button.site {
-      width: 40px;
-      text-align: center;
-      text-indent: 0;
-    }
-
-    button.site:after {
-      display: none;
-    }
+  
 
 
 
@@ -227,23 +196,117 @@
       text-align: center;
     }
 
+    #match-history {
+      width: 38.5vw;
+      margin-left: auto;
+      margin-right: auto;
+      background-color: rgb(114, 112, 112);
+      border-radius: 8px;
+      padding-top: 1em;
+      padding-bottom: 1em;
+      color: #fbfbfb;
+      text-shadow: 1px 1px 1px rgba(0, 0, 0, .4);
+      font-size: 1.2em;
+      box-shadow: 0 10px 15px rgb(0 0 0 / 19%), 0 6px 6px rgb(0 0 0 / 23%);
+    }
+
+
+
     .match {
+      position: relative;
       display: flex;
-      flex-direction: column;
       list-style: none;
       font-family: Quicksand, sans-serif;
-      font-weight: 700;
+      /* font-weight: 700; */
       line-height: 1.6;
       background: white;
-      margin: 0.5rem 10% 0.5rem 10%;
+      margin: 0.5rem 5% 0.5rem 5%;
       padding-top: 1em;
       padding-bottom: 1em;
       border-radius: 8px;
-      color: #222;
-      font-size: 1rem;
-      border: #222 1px solid;
-      text-align: center;
+      color: #fbfbfb;
+      text-shadow: 1px 1px 1px rgba(0, 0, 0, .4);
+      font-size: 1em;
+      /* border: #222 1px solid; */
+      justify-content: center;
+      /* text-shadow: none; */
+    }
 
+    .decorative-line {
+      position: absolute;
+      width: 4px;
+      height: 1.6em;
+      left: 10px;
+      border-radius: 2px;
+      opacity: 0.9;
+    }
+
+    .line-won {
+      /* background-color: #a5f3c5; */
+      background-color: #1ed269;
+    }
+
+    .line-lost {
+      background-color: #ca1c1c;
+    }
+
+    @media (max-width: 699px) {
+      #board-bar {
+        padding-bottom: 0.2em;
+      }
+      .board-container {
+        grid-template-columns: repeat(11, 6vw);
+        grid-template-rows: repeat(11, 6vw);
+      }
+
+      .board-item {
+        font-size: 0.5em;
+      }
+
+      .game-item {
+        font-size: 0;
+      }
+
+      #game-bar {
+        padding-bottom: 0.2em;
+      }
+
+      .counter {
+        font-size: 0.8em;
+      }
+
+      #match-history {
+        width: 80vw;
+        font-size: 0.6em;
+      }
+
+      button {
+        font-size: 0.6em;
+      }
+
+    }
+
+    @media (min-width: 700px) and (max-width: 1149px) {
+      .board-item {
+        font-size: 1em;
+      }
+
+      .counter {
+        font-size: 1em;
+      }
+
+      .game-item {
+        font-size: 0;
+      }
+
+      #match-history {
+        width: 50vw;
+        font-size: 0.8em;
+      }
+
+      button {
+        font-size: 0.7em;
+      }
     }
   </style>
 </head>
@@ -256,19 +319,33 @@
       <!-- <div class="board-container" id="internal-board"></div> -->
       <dispanv id="aggregate-board" class="board-container"></span>
     </div>
-    <span class="counter">Turn:
-      <span id="turn-count">0</span>
-    </span>
+    <div id="game-bar">
+      <div id="buttons-balance">
+        <button>New game</button>
+        <button>Let AI play</button>
+      </div>
+      <div class="counter">Turn:
+        <span id="turn-count">0</span>
+      </div>
+      <div id="button-bar">
+        <button id="start-ai">Let AI play</button>
+        <button id="new-game">New game</button>
+      </div>
+      
+    </div>
+    
 
   </div>
 
   <div id="stats">
 
     <!-- <button id="reset">Reset</button> -->
-    <button id='start-ai'>Let AI play</button>
-    <button id="new-game">New game</button>
-    <div>
-      <list id="match-history"></list>
+    <!-- <button id='start-ai'>Let AI play</button> -->
+    
+
+    <div id="match-history">
+      <div style="margin-bottom: 0.8em">Match History</div>
+      <list id="matches"></list>
     </div>
 
   </div>

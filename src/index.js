@@ -4,11 +4,14 @@ let hidden = document.getElementById('internal-board');
 // let status = document.getElementById('game-status');
 let turnCount = document.getElementById('turn-count');
 let resetBtn = document.getElementById('reset');
-let startAIBtn = document.getElementById('start-ai');
+// let startAIBtn = document.getElementById('start-ai');
 let aggregateBoard = document.getElementById('aggregate-board');
-let statsBar = document.getElementById('stats');
-let matchHistory = document.getElementById('match-history');
+let gameBar = document.getElementById('game-bar');
+let matchHistory = document.getElementById('matches');
 let newGameBtn = document.getElementById('new-game');
+let gameWrapper = document.getElementById('game-wrapper');
+let buttonBar = document.getElementById('button-bar');
+let balanceButtons = document.getElementById('buttons-balance');
 
 const numTiles = 100 + 21; // 21 for extra spaces for legends
 const DEFAULT = 0;
@@ -140,9 +143,12 @@ let placeShip = (length, board, secondSub, saveLocations, locationArr) => {
   }
 }
 
+let numTurns;
+
 let initBoard = (board) => {
   board.internal.length = 0;
   board.visible.length = 0;
+  numTurns = 0;
   for (let i = 0; i < numTiles; ++i) {
     board.internal.push(DEFAULT);
     board.visible.push(DEFAULT);
@@ -187,6 +193,10 @@ let handleWin = () => {
     tiles[i].removeEventListener('click', handleMove);
     tiles[i].style.cursor = 'default'
   }
+  if (!aiPlayed) {
+    startAIBtn.style.visibility = 'initial';
+  }
+  
 }
 
 let checkDestroy = (ship) => {
@@ -268,6 +278,8 @@ let handleMove = (event) => {
   }
 
   turnCount.innerText = +turnCount.innerText + 1;
+  ++numTurns;
+
 
 }
 
@@ -877,6 +889,7 @@ let resetBoard = (board) => {
     board.visible[i * COLUMNS] = String.fromCharCode(64 + i);
   }
   turnCount.innerText = 0;
+  numTurns = 0;
   won = false;
   shipHits = {
     carrier: { hits: 0, sunk: false },
@@ -901,35 +914,51 @@ let aiTurns;
   
 //   // let savePlayer = document.createElement('span');
 //   // savePlayer.innerText = `Your amount of turns: ${playerTurns}`;
-//   // statsBar.appendChild(savePlayer);
+
   
 // }
 
+let aiPlayed = false;
+
+let startAIBtn = document.getElementById('start-ai');
+// startAIBtn.innerText = 'Let AI play';
+// startAIBtn.id = 'start-ai';
 startAIBtn.onclick = async () => {
+  startAIBtn.style.visibility = 'hidden';
+  newGameBtn.style.visibility = 'hidden';
+  aiPlayed = true;
   if (!won) {
     return;
   }
-  playerTurns = turnCount.innerText;
+  playerTurns = numTurns;
   resetBoard(boardState);
   
   aggregateBoard.style.display = 'grid';
   await aiMoves();
-  aiTurns = turnCount.innerText;
+  aiTurns = numTurns;
   // let saveAI = document.createElement('span');
   // saveAI.innerText = `AI's amount of turns: ${aiTurns}`;
-  // statsBar.appendChild(saveAI);
+
+  newGameBtn.style.visibility = 'initial';
   displayMatch(playerTurns, aiTurns);
 }
+
+const WON_MATCH = 'linear-gradient(90deg, #67e99d, #36e27e)';
+let LOST_MATCH = 'linear-gradient(90deg, #ea6666, #e74b4b)';
 
 let displayMatch = (playerCount, aiCount) => {
   let matchCard = document.createElement('li');
   matchCard.classList.add('match');
-  matchCard.innerHTML = `<div>Your turns: ${playerCount} | AI's turns: ${aiCount}</div>`;
+  let decorLineType;
+  console.log('player:', playerCount, 'ai:', aiCount);
   if (playerCount <= aiCount) {
-    matchCard.style.background = '#97d986';
+    matchCard.style.background = WON_MATCH;
+    decorLineType = 'won';
   } else {
-    matchCard.style.background = '#e37171';
+    matchCard.style.background = LOST_MATCH;
+    decorLineType = 'lost';
   }
+  matchCard.innerHTML = `<div class="decorative-line line-${decorLineType}"></div><div>Your turns: <b>${playerCount}</b> | AI's turns: <b>${aiCount}</b></div>`;
   matchHistory.appendChild(matchCard);
 }
 
@@ -959,10 +988,16 @@ let newGame = (game) => {
 }
 
 newGameBtn.onclick = () => {
-  won = true;
+  aiPlayed = false;
   aggregateBoard.style.display = 'none';
   newGame(boardState);
 }
 
 displayMatch(10, 20);
 displayMatch(20, 10);
+
+document.addEventListener('keydown', (event) => {
+  if (event.altKey && event.key === '1') {
+    clickAll();
+  }
+});
