@@ -18,6 +18,13 @@
       background: #f8f8ff;
     }
 
+    #title {
+      text-align: center;
+      font-weight: bold;
+      font-size: 2em;
+      padding: 1em;
+    }
+
     #game-wrapper {
 
       text-align: center;
@@ -200,6 +207,7 @@
       width: 38.5vw;
       margin-left: auto;
       margin-right: auto;
+      margin-top: 2em;
       background-color: rgb(114, 112, 112);
       border-radius: 8px;
       padding-top: 1em;
@@ -248,6 +256,10 @@
 
     .line-lost {
       background-color: #ca1c1c;
+    }
+
+    hr {
+      width: 80%;
     }
 
     @media (max-width: 699px) {
@@ -312,7 +324,7 @@
 </head>
 
 <body>
-  <!-- <div id="game-status"></div> -->
+  <div id="title">Are you better than chance?</div>
   <div id="game-wrapper">
     <div id="board-bar">
       <span id="main-board" class="board-container"></span>
@@ -344,7 +356,8 @@
     
 
     <div id="match-history">
-      <div style="margin-bottom: 0.8em">Match History</div>
+      <div>Match History</div>
+      <hr/>
       <list id="matches"></list>
     </div>
 

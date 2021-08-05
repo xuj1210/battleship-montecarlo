@@ -993,8 +993,8 @@ newGameBtn.onclick = () => {
   newGame(boardState);
 }
 
-displayMatch(10, 20);
-displayMatch(20, 10);
+// displayMatch(10, 20);
+// displayMatch(20, 10);
 
 document.addEventListener('keydown', (event) => {
   if (event.altKey && event.key === '1') {
