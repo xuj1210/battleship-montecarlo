@@ -1,3 +1,5 @@
+import { updateAiStats, getAiStats } from "./database.js";
+
 let boardBar = document.getElementById('board-bar');
 let mainBoard = document.getElementById('main-board');
 let hidden = document.getElementById('internal-board');
@@ -196,7 +198,7 @@ let handleWin = () => {
   if (!aiPlayed) {
     startAIBtn.style.visibility = 'initial';
   }
-  
+
 }
 
 let checkDestroy = (ship) => {
@@ -590,7 +592,7 @@ let generatePossibleAt = (board, idx, direction, prevCorrect) => {
       placeShipFromTo(DESTROYER, spots, false, idx, (direction * -1));
     }
 
-    for (let i = 12; i < numTiles; ++i ) {
+    for (let i = 12; i < numTiles; ++i) {
       if (spots[i]) {
         if (spots[i] === MISS || spots[i] === DESTROYED) {
           spots[i] = 0;
@@ -687,9 +689,9 @@ let tryDirection = async (board, curIdx, increment, tiles, correctCount) => {
       } else {
         return correctCount;
       }
-      
+
     }
-    
+
     return correctCount;
   } else {
 
@@ -713,15 +715,15 @@ let combineAggregate = (...boards) => {
       if (validShips.has(board[i])) {
         ++final[i];
       }
-      
+
     }
   }
-  
+
   for (let i = 0; i < numTiles; ++i) {
     if (final[i] !== MISS || final[i] !== DESTROYED || lettersNumbers.has(final[i])) {
       final[i] /= boardCount;
     }
-    
+
   }
   return final;
 }
@@ -791,7 +793,7 @@ let seekDestroy = async (board, startingIdx, tiles) => {
   // aggregateHitAllDirections(board, startingIdx, correctCount);
 
   if (inRange(startingIdx + RIGHT) && !shipAt(board, startingIdx + RIGHT)) {
-    await tryDirection(board, curIdx, RIGHT, tiles, correctCount).then(result => { 
+    await tryDirection(board, curIdx, RIGHT, tiles, correctCount).then(result => {
       correctCount = result;
       // aggregateHitAllDirections(board, startingIdx, correctCount);
     });
@@ -801,10 +803,10 @@ let seekDestroy = async (board, startingIdx, tiles) => {
     }
   }
 
-  
+
 
   if (inRange(startingIdx + LEFT) && !shipAt(board, startingIdx + LEFT)) {
-    await tryDirection(board, curIdx, LEFT, tiles, correctCount).then(result => { 
+    await tryDirection(board, curIdx, LEFT, tiles, correctCount).then(result => {
       correctCount = result;
       // aggregateHitAllDirections(board, startingIdx, correctCount);
     });
@@ -816,7 +818,7 @@ let seekDestroy = async (board, startingIdx, tiles) => {
 
 
   if (inRange(startingIdx + UP) && !shipAt(board, startingIdx + UP)) {
-    await tryDirection(board, curIdx, UP, tiles, correctCount).then(result => { 
+    await tryDirection(board, curIdx, UP, tiles, correctCount).then(result => {
       correctCount = result;
       // aggregateHitAllDirections(board, startingIdx, correctCount);
     });
@@ -828,7 +830,7 @@ let seekDestroy = async (board, startingIdx, tiles) => {
 
 
   if (inRange(startingIdx + DOWN) && !shipAt(board, startingIdx + DOWN)) {
-    await tryDirection(board, curIdx, DOWN, tiles, correctCount).then(result => { 
+    await tryDirection(board, curIdx, DOWN, tiles, correctCount).then(result => {
       correctCount = result;
     });
     curIdx = startingIdx;
@@ -911,11 +913,11 @@ let playerTurns;
 let aiTurns;
 
 // resetBtn.onclick = () => {
-  
+
 //   // let savePlayer = document.createElement('span');
 //   // savePlayer.innerText = `Your amount of turns: ${playerTurns}`;
 
-  
+
 // }
 
 let aiPlayed = false;
@@ -932,7 +934,7 @@ startAIBtn.onclick = async () => {
   }
   playerTurns = numTurns;
   resetBoard(boardState);
-  
+
   aggregateBoard.style.display = 'grid';
   await aiMoves();
   aiTurns = numTurns;
@@ -941,6 +943,14 @@ startAIBtn.onclick = async () => {
 
   newGameBtn.style.visibility = 'initial';
   displayMatch(playerTurns, aiTurns);
+  let aiWon;
+  if (playerTurns <= aiTurns) {
+    aiWon = false;
+  } else {
+    aiWon = true;
+  }
+
+  updateAiStats(aiWon, aiTurns);
 }
 
 const WON_MATCH = 'linear-gradient(90deg, #67e99d, #36e27e)';
@@ -959,7 +969,7 @@ let displayMatch = (playerCount, aiCount) => {
     decorLineType = 'lost';
   }
   matchCard.innerHTML = `<div class="decorative-line line-${decorLineType}"></div><div>Your turns: <b>${playerCount}</b> | AI's turns: <b>${aiCount}</b></div>`;
-  matchHistory.appendChild(matchCard);
+  matchHistory.prepend(matchCard);
 }
 
 aggregateBoard.style.display = 'none';
@@ -989,6 +999,7 @@ let newGame = (game) => {
 
 newGameBtn.onclick = () => {
   aiPlayed = false;
+  startAIBtn.style.visibility = 'hidden';
   aggregateBoard.style.display = 'none';
   newGame(boardState);
 }
