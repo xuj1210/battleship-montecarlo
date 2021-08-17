@@ -9,7 +9,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
-
+  <script defer src="../node_modules/@fortawesome/fontawesome-free/js/brands.js"></script>
+  <script defer src="../node_modules/@fortawesome/fontawesome-free/js/solid.js"></script>
+  <script defer src="../node_modules/@fortawesome/fontawesome-free/js/fontawesome.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -23,11 +25,12 @@
       min-height: 100vh;
     }
 
-    #title {
+    #header {
       text-align: center;
       font-weight: bold;
       font-size: 2em;
-      padding: 0.8em;
+      padding: 0.8em 0.8em 0 0.8em;
+      margin: auto;
       /* background: rgb(180, 180, 255); */
       font-family: 'Roboto', sans-serif;
       width: 50vw;
@@ -54,7 +57,7 @@
       margin-right: auto;
       flex-wrap: wrap;
       justify-content: center;
-      padding: 1em;
+      padding: 0.5em 1em 0.5em 1em;
 
     }
 
@@ -222,7 +225,7 @@
       margin-left: auto;
       margin-right: auto;
       margin-top: 2em;
-      background-color: rgb(114, 112, 112);
+      background-color: rgba(50, 50, 50, 0.3);
       border-radius: 8px;
       padding-top: 1em;
       padding-bottom: 1em;
@@ -276,30 +279,37 @@
       width: 80%;
     }
 
+    .text-link {
+      text-decoration: none;
+      color: inherit;
+    }
+
     @media (max-width: 699px) {
       body {
         width: auto;
+        margin-left: 0.5em;
+        margin-right: 0.5em;
       }
 
-      #title {
-        font-size: 1.2em;
+      #header {
+        font-size: 1.3em;
       }
 
       #game-wrapper {
-        padding-left: 0.6em;
-        padding-right: 0.6em;
+        /* padding-left: 0.6em;
+        padding-right: 0.6em; */
       }
 
       #board-bar {
         /* padding-bottom: 0.2em; */
         padding: 0.5em 0.5em 0.2em 0.5em;
         width: fit-content;
-        display: initial;
       }
 
       .board-container {
-        grid-template-columns: repeat(11, 6.7vw);
-        grid-template-rows: repeat(11, 6.7vw);
+        grid-template-columns: repeat(11, 7vw);
+        grid-template-rows: repeat(11, 7vw);
+        padding: 0.6em;
       }
 
       .board-item {
@@ -333,6 +343,10 @@
     }
 
     @media (min-width: 700px) and (max-width: 1149px) {
+      .board-container {
+        padding: 0.7em;
+      }
+
       .board-item {
         font-size: 1em;
       }
@@ -358,11 +372,12 @@
 </head>
 
 <body>
-  
+
   <div id="game-wrapper">
     <div id="header">
-      <div class="title">Battleship</div>
+      <div class="title">Are you better than chance?</div>
     </div>
+    <hr />
     <div id="board-bar">
       <span id="main-board" class="board-container"></span>
       <!-- <div class="board-container" id="internal-board"></div> -->
@@ -393,10 +408,11 @@
 
 
     <div id="match-history">
-      <div>Match History</div>
-      <hr />
-      <list id="matches"></list>
-      <a href="./stats.html">See your stats against the AI's</a>
+        <div>Match History</div>
+        <hr/>
+        <list id="matches"></list>
+        <a href="./stats.html" class="text-link">See your stats against the AI's <i class="fas fa-external-link-alt"></i></a>
+
     </div>
     <div id="user-stats">
 
