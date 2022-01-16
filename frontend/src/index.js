@@ -1,3 +1,5 @@
+// @ts-check
+
 import { updateAiStats, getAiStats } from "./database.js";
 
 let boardBar = document.getElementById('board-bar');
@@ -1004,11 +1006,9 @@ newGameBtn.onclick = () => {
   newGame(boardState);
 }
 
-// displayMatch(10, 20);
-// displayMatch(20, 10);
 
 document.addEventListener('keydown', (event) => {
-  if (event.altKey && event.key === '1') {
+  if ((event.altKey || event.ctrlKey) && event.key === '1') {
     clickAll();
   }
 });

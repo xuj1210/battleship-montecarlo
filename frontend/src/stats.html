@@ -9,9 +9,30 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
   </header>
+  <style>
+    #stats-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      
+      border: 1px solid green;
+    }
+    .stats-display {
+      padding-top: 1em;
+      padding-bottom: 1em;
+    }
+    .vertical-break {
+      width: 0px;
+      border: 1px solid black;
+    }
+  </style>
 </html>
 <body>
-  <div>hi</div>
+  <div id="stats-wrapper">
+    <div id="player-stats" class="stats-display">ABCDEFG</div>
+    <div class="vertical-break"></div>
+    <div id="ai-stats" class="stats-display">GFDCBA</div>
+  </div>
   <a href="./index.html">Back to game</a>
   <script type="module" src="stats.js"></script>
 </body>
