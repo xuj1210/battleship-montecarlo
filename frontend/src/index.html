@@ -13,12 +13,45 @@
 </head>
 
 <body>
+  <div class="popup" id="myPopup">
+    <!-- Popup content -->
+    <div class="popup-content">
+      <span class="close-btn" onclick="closePopup()">&times;</span>
+      <h2>Welcome to a demonstration of the Monte Carlo Algorithm!</h2>
+      <p>Here you can compete head-to-head against an AI trained to use the
+        <a target="_blank" href="https://en.wikipedia.org/wiki/Monte_Carlo_algorithm">Monte Carlo Algorithm</a> to play
+        the board game <a target="_blank" href="https://en.wikipedia.org/wiki/Battleship_(game)">Battleship</a>.
+        This algorithm takes a straightforward approach - it looks at a large sample of
+        randomly
+        generated possible game states and selects the move where a ship is most likely to be.
+        <br /><br />
+        You'll first play the game yourself, and then have the option to watch the AI play the
+        same board configuration. An extra game board will appear giving you a glance into what the AI sees as it's
+        playing. Before each move, the AI generates a heat map of how likely a ship is on each square by
+        aggregating
+        data from hundreds of thousands of possible ship configurations given the current game state (ie. opponent's
+        ships remaining, previous hits and misses) and selects the square where a ship was present in the most
+        configurations.
+        <br /><br />
+        See if you can finish in less turns than the AI!
+      </p>
+      <div style="text-align: center"><button onclick="closePopup()">Continue</button></div>
+
+    </div>
+  </div>
   <div id="game-wrapper">
     <div id="header">
-      <h1 class="title">Can you beat the AI?</h1>
-      <h3 class="description">Try to destroy all the ships in less turns than the AI! Click a square to begin.</h3>
+      <h1 class="title">Monte Carlo Algorithm in Battleship</h1>
+      <h3 class="description">Click a square to begin!</h3>
     </div>
     <hr />
+    <h3 class="description">
+      <div>
+        <span style="color:rgb(161, 54, 54)">&#9632;</span> = hit
+        <span style="color:rgb(121, 134, 134)">&#9632;</span> = miss
+        <span style="color:rgb(66, 66, 66)">&#9632;</span> = sunk
+      </div>
+    </h3>
     <div id="board-bar">
       <span id="main-board" class="board-container"></span>
       <!-- <div class="board-container" id="internal-board"></div> -->
@@ -53,5 +86,14 @@
   <!-- <button id="auto-win">Auto win</button> -->
 </body>
 <script type="module" src='index.js'></script>
+<script>
+  window.onload = function () {
+    document.getElementById("myPopup").style.display = "block";
+  }
+
+  function closePopup() {
+    document.getElementById("myPopup").style.display = "none";
+  }
+</script>
 
 </html>

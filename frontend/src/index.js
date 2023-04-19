@@ -283,8 +283,6 @@ let handleMove = (event) => {
 
   turnCount.innerText = +turnCount.innerText + 1;
   ++numTurns;
-
-
 }
 
 let displayBoard = (board) => {
@@ -309,7 +307,6 @@ let displayBoard = (board) => {
     }
     mainBoard.appendChild(item);
   }
-
 }
 
 let displayInternal = (board) => {
@@ -338,8 +335,6 @@ const sleep = (milliseconds) => {
   return new Promise(resolve => setTimeout(resolve, milliseconds))
 };
 
-
-
 // let randomMoves = async () => {
 //   let tried = new Set();
 //   let children = mainBoard.childNodes;
@@ -358,7 +353,6 @@ const sleep = (milliseconds) => {
 //   }
 // }
 
-
 let heatMapColorforValue = (value) => {
   if (value === 0) {
     return "hsl(240, 100%, 30%";
@@ -366,7 +360,6 @@ let heatMapColorforValue = (value) => {
   let h = (1.0 - value) * 240;
   return "hsl(" + h + ", 100%, 50%)";
 }
-
 
 let generatePossible = (sourceBoard, possibleBoard) => {
   // clear possibleBoard
@@ -394,7 +387,6 @@ let generatePossible = (sourceBoard, possibleBoard) => {
   }
   return possibleBoard;
 }
-
 
 let aggregateSets = (board) => {
   let prevAggregateBoard = aggregateBoard.childNodes;
@@ -451,11 +443,9 @@ let aggregateSets = (board) => {
       item.classList.add('board-item');
       aggregateBoard.appendChild(item);
     }
-
   }
   // console.log(maxIdx, max);
   return maxIdx;
-
 }
 
 let lettersNumbers = new Set();
@@ -471,7 +461,6 @@ let placeShipFromTo = (length, board, secondSub, idx, direction) => {
   // let orientation = randomInt(4);
   let placed = false;
   let curIdx = idx;
-
 
   // let increment;
   // switch (direction) {
@@ -603,12 +592,10 @@ let generatePossibleAt = (board, idx, direction, prevCorrect) => {
         }
       }
 
-
       //  else if (spots[i] === MISS || spots[i] === DESTROYED) {
       //   spots[i] = 0;
       // };
     }
-
     return spots;
   }
   return [];
@@ -662,9 +649,7 @@ let aggregateOnHit = (board, hitIdx, direction, prevCorrect) => {
       item.classList.add('board-item');
       aggregateBoard.appendChild(item);
     }
-
   }
-
 }
 
 let inRange = (idx) => {
@@ -691,12 +676,9 @@ let tryDirection = async (board, curIdx, increment, tiles, correctCount) => {
       } else {
         return correctCount;
       }
-
     }
-
     return correctCount;
   } else {
-
     return 0;
   }
 }
@@ -717,7 +699,6 @@ let combineAggregate = (...boards) => {
       if (validShips.has(board[i])) {
         ++final[i];
       }
-
     }
   }
 
@@ -725,7 +706,6 @@ let combineAggregate = (...boards) => {
     if (final[i] !== MISS || final[i] !== DESTROYED || lettersNumbers.has(final[i])) {
       final[i] /= boardCount;
     }
-
   }
   return final;
 }
@@ -784,12 +764,10 @@ let aggregateHitAllDirections = (board, hitIdx, prevCorrect) => {
       item.classList.add('board-item');
       aggregateBoard.appendChild(item);
     }
-
   }
 }
 
 let seekDestroy = async (board, startingIdx, tiles) => {
-
   let curIdx = startingIdx;
   let correctCount = 1;
   // aggregateHitAllDirections(board, startingIdx, correctCount);
@@ -840,7 +818,6 @@ let seekDestroy = async (board, startingIdx, tiles) => {
       return;
     }
   }
-
 }
 
 let aiMoves = async () => {
@@ -854,12 +831,10 @@ let aiMoves = async () => {
   let idx = aggregateSets(boardState.visible);
 
   while (!won) {
-
     await sleep(SLEEPTIME);
     tiles[idx].click();
 
     if (checkWin()) {
-
       return;
     }
 
@@ -867,12 +842,9 @@ let aiMoves = async () => {
       aggregateSets(boardState.visible);
       // aggregateHitAllDirections(boardState.visible, idx, 1);
       await seekDestroy(boardState.visible, idx, tiles);
-
     }
-
     idx = aggregateSets(boardState.visible);
     // console.log(idx);
-
   }
   cover.remove();
 }
@@ -915,11 +887,8 @@ let playerTurns;
 let aiTurns;
 
 // resetBtn.onclick = () => {
-
 //   // let savePlayer = document.createElement('span');
 //   // savePlayer.innerText = `Your amount of turns: ${playerTurns}`;
-
-
 // }
 
 let aiPlayed = false;
@@ -985,11 +954,9 @@ let clickAll = () => {
   for (let i = 0; i < numTiles; ++i) {
     tiles[i].click();
   }
-
 }
 
 // let autoWin = document.getElementById('auto-win');
-
 // autoWin.onclick = () => {
 //   clickAll();
 // }
@@ -1005,7 +972,6 @@ newGameBtn.onclick = () => {
   aggregateBoard.style.display = 'none';
   newGame(boardState);
 }
-
 
 document.addEventListener('keydown', (event) => {
   if ((event.altKey || event.ctrlKey) && event.key === '1') {
