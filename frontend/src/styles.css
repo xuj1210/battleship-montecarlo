@@ -49,6 +49,8 @@ body {
     border-radius: 5px;
     box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
     line-height: 1.6;
+    overflow: auto;
+    max-height: 85vh;
 }
 
 .close-btn {
@@ -65,8 +67,8 @@ body {
     /* background-color: rgb(163, 183, 240); */
     background-color: #f8f8ff;
     border-radius: 15px;
-    /* box-shadow: 0 10px 15px rgb(0 0 0 / 19%), 0 6px 6px rgb(0 0 0 / 23%); */
-    border: 1px solid #132f4c;
+    box-shadow: 0 10px 15px rgb(0 0 0 / 19%), 0 6px 6px rgb(0 0 0 / 23%);
+    /* border: 1px solid #132f4c; */
     width: fit-content;
     margin: 1em auto auto auto;
 }
@@ -207,8 +209,8 @@ button:active {
     color: #fbfbfb;
     text-shadow: 1px 1px 1px rgba(0, 0, 0, .4);
     font-size: 1.2em;
-    /* box-shadow: 0 10px 15px rgb(0 0 0 / 19%), 0 6px 6px rgb(0 0 0 / 23%); */
-    border: 1px solid black;
+    box-shadow: 0 10px 15px rgb(0 0 0 / 19%), 0 6px 6px rgb(0 0 0 / 23%);
+    /* border: 1px solid black; */
 }
 
 .match {
@@ -258,13 +260,18 @@ hr {
         width: auto;
     }
 
-    #title {
+    .title {
         font-size: 1.2em;
     }
 
+    .description {
+        font-size: 0.9em;
+        margin: auto 1em auto 1em;
+    }
+
     #game-wrapper {
-        margin-left: 0.6em;
-        margin-right: 0.6em;
+        margin: auto;
+        margin-top: 1.3em;
     }
 
     #board-bar {
