@@ -2,6 +2,7 @@
 
 import { updateAiStats, getAiStats } from "./database.js";
 
+/* ------- INITIALIZATIONS ------- */
 let boardBar = document.getElementById('board-bar');
 let mainBoard = document.getElementById('main-board');
 let hidden = document.getElementById('internal-board');
@@ -16,6 +17,7 @@ let newGameBtn = document.getElementById('new-game');
 let gameWrapper = document.getElementById('game-wrapper');
 let buttonBar = document.getElementById('button-bar');
 let balanceButtons = document.getElementById('buttons-balance');
+let startAIBtn = document.getElementById('start-ai');
 
 const numTiles = 100 + 21; // 21 for extra spaces for legends
 const DEFAULT = 0;
@@ -43,7 +45,26 @@ const SUBMARINE1 = 3;
 const DESTROYER = 2;
 const SUBMARINE2 = 6;
 
+const validShips = new Set();
+validShips.add(CARRIER);
+validShips.add(BATTLESHIP);
+validShips.add(SUBMARINE1);
+validShips.add(SUBMARINE2);
+validShips.add(DESTROYER);
+
 const SLEEPTIME = 500;
+
+const WON_MATCH = 'linear-gradient(90deg, #67e99d, #36e27e)';
+const LOST_MATCH = 'linear-gradient(90deg, #ea6666, #e74b4b)';
+
+let shipLocations;
+let numTurns, playerTurns, aiTurns;
+let aiPlayed = false;
+
+let boardState = {
+  "internal": [],
+  "visible": []
+}
 
 let shipHits = {
   carrier: { hits: 0, sunk: false },
@@ -70,16 +91,24 @@ for (let i = 1; i <= 10; ++i) {
   invalidSpot.add(i);
 }
 
-let shipAt = (board, index) => {
+const lettersNumbers = new Set();
+for (let i = 1; i <= 10; ++i) {
+  lettersNumbers.add(i);
+}
+
+/* ------- FUNCTIONS ------- */
+
+function shipAt(board, index) {
   return invalidSpot.has(board[index]);
 }
 
-let randomInt = (range) => {
+function randomInt(range) {
   return Math.floor(Math.random() * range);
 }
 
-let getIdx = (length, orientation) => {
+function getIdx(length, orientation) {
   let column, row;
+
   if (orientation === VERTICAL) {
     column = randomInt(COLUMNS - 1) + 1;
     row = randomInt(ROWS - length) + 1;
@@ -89,21 +118,16 @@ let getIdx = (length, orientation) => {
   }
 
   let index = row * COLUMNS + column;
-  // console.log(`(${column}, ${row})`)
   return index;
 }
 
-// let placedFirstSub = false;
-
-let shipLocations;
-
-let placeShip = (length, board, secondSub, saveLocations, locationArr) => {
-
+function placeShip(length, board, secondSub, saveLocations, locationArr) {
   let placeable = false;
   let orientation = randomInt(2);
   let originIdx = getIdx(length, orientation);
   let index = originIdx;
   let maxTries = 100;
+
   let increment;
   if (orientation === HORIZONTAL) {
     increment = 1;
@@ -126,38 +150,39 @@ let placeShip = (length, board, secondSub, saveLocations, locationArr) => {
       index += increment;
     }
   }
-  if (placeable) {
-    let ship = length;
-    if (ship === 3 && secondSub) {
-      ship = 6;
-    }
-    for (let j = 0; j < length; ++j) {
-      if (saveLocations) {
-        locationArr[ship].push(originIdx);
-      }
 
-      board[originIdx] = ship;
-      if (orientation === HORIZONTAL) {
-        ++originIdx;
-      } else {
-        originIdx += COLUMNS;
-      }
+  if (!placeable) return;
 
+  let ship = length;
+  if (ship === SUBMARINE1 && secondSub) {
+    ship = SUBMARINE2;
+  }
+  for (let j = 0; j < length; ++j) {
+    if (saveLocations) {
+      locationArr[ship].push(originIdx);
     }
+
+    board[originIdx] = ship;
+    if (orientation === HORIZONTAL) {
+      ++originIdx;
+    } else {
+      originIdx += COLUMNS;
+    }
+
   }
 }
 
-let numTurns;
-
-let initBoard = (board) => {
+function initBoard(board) {
   board.internal.length = 0;
   board.visible.length = 0;
   numTurns = 0;
+
   for (let i = 0; i < numTiles; ++i) {
     board.internal.push(DEFAULT);
     board.visible.push(DEFAULT);
   }
-  // make legends
+
+  // make legends:
   // rows
   for (let i = 0; i < COLUMNS; ++i) {
     board.visible[i] = i;
@@ -168,7 +193,9 @@ let initBoard = (board) => {
     board.visible[i * COLUMNS] = String.fromCharCode(64 + i);
     board.internal[i * COLUMNS] = INVALID;
   }
+
   shipLocations = [-1, -1, [], [], [], [], []];
+
   // place ships
   for (let i = 5; i >= 2; --i) {
     if (i !== 3) {
@@ -180,16 +207,11 @@ let initBoard = (board) => {
   }
 }
 
-let boardState = {
-  "internal": [],
-  "visible": []
-}
-
-let checkWin = () => {
+function checkWin() {
   return shipHits.carrier.sunk && shipHits.battleship.sunk && shipHits.submarine1.sunk && shipHits.submarine2.sunk && shipHits.destroyer.sunk;
 }
 
-let handleWin = () => {
+function handleWin() {
   won = true;
   mainBoard.style.background = "#11ab68";
   let tiles = mainBoard.childNodes;
@@ -197,27 +219,21 @@ let handleWin = () => {
     tiles[i].removeEventListener('click', handleMove);
     tiles[i].style.cursor = 'default'
   }
+
   if (!aiPlayed) {
     startAIBtn.style.visibility = 'initial';
   }
-
 }
 
-let checkDestroy = (ship) => {
+function checkDestroy(ship) {
   let tiles = mainBoard.childNodes;
   for (const index of shipLocations[ship]) {
-    // for (const className of tiles[index].classList) {
-    //   if (className === 'default') {
-    //     return false;
-    //   }
-    // }
     if (boardState.visible[index] == DEFAULT) {
       return false;
     }
   }
-  // destroyed
-  // console.log('destroyed');
 
+  // destroyed
   for (const index of shipLocations[ship]) {
     tiles[index].classList.add('destroyed');
     tiles[index].classList.remove('hit');
@@ -244,17 +260,17 @@ let checkDestroy = (ship) => {
   if (checkWin()) {
     handleWin();
   };
-  return true;
 
+  return true;
 }
 
-let handleMove = (event) => {
+function handleMove(event) {
   let clickedItem = event.srcElement;
   clickedItem.removeEventListener('click', handleMove);
   clickedItem.classList.remove('default');
-  let index = +clickedItem.innerText;
-  if (shipAt(boardState.internal, index)) {
+  const index = +clickedItem.innerText; // parse number from text
 
+  if (shipAt(boardState.internal, index)) {
     boardState.visible[index] = HIT;
     clickedItem.classList.add('hit');
     let shipType = boardState.internal[index];
@@ -285,17 +301,19 @@ let handleMove = (event) => {
   ++numTurns;
 }
 
-let displayBoard = (board) => {
-  let boardLength = board.visible.length;
+function displayBoard(board) {
+  const boardLength = board.visible.length;
   let temp = document.createElement('div');
   mainBoard.appendChild(temp);
+
   for (let i = 1; i < 11; ++i) {
     let item = document.createElement('div');
     item.classList.add('board-item');
     item.innerText = board.visible[i]
     mainBoard.appendChild(item);
   }
-  for (let i = 11; i < boardLength; ++i) {
+
+  for (let i = ROWS; i < boardLength; ++i) {
     let item = document.createElement('div');
     item.classList.add('board-item');
     item.innerText = i;
@@ -309,11 +327,13 @@ let displayBoard = (board) => {
   }
 }
 
-let displayInternal = (board) => {
-  let length = hidden.childNodes.length;
+function displayInternal(board) {
+  const length = hidden.childNodes.length;
+
   for (let i = 0; i < length; ++i) {
     hidden.childNodes[0].remove();
   }
+
   for (let i = 0; i < numTiles; ++i) {
     let item = document.createElement('div');
     item.innerText = board.internal[i];
@@ -323,13 +343,6 @@ let displayInternal = (board) => {
     hidden.appendChild(item);
   }
 }
-
-// status.innerText = 'INITIALIZING';
-initBoard(boardState);
-displayBoard(boardState);
-// displayInternal(boardState);
-
-// status.innerText = 'READY';
 
 const sleep = (milliseconds) => {
   return new Promise(resolve => setTimeout(resolve, milliseconds))
@@ -353,15 +366,15 @@ const sleep = (milliseconds) => {
 //   }
 // }
 
-let heatMapColorforValue = (value) => {
+function heatMapColorforValue(value) {
   if (value === 0) {
-    return "hsl(240, 100%, 30%";
+    return "hsl(240, 100%, 30%)";
   }
   let h = (1.0 - value) * 240;
   return "hsl(" + h + ", 100%, 50%)";
 }
 
-let generatePossible = (sourceBoard, possibleBoard) => {
+function generatePossible(sourceBoard, possibleBoard) {
   // clear possibleBoard
   while (possibleBoard.length) {
     possibleBoard.pop();
@@ -370,6 +383,7 @@ let generatePossible = (sourceBoard, possibleBoard) => {
   for (let i = 0; i < numTiles; ++i) {
     possibleBoard.push(sourceBoard[i]);
   }
+
   if (!shipHits.carrier.sunk) {
     placeShip(CARRIER, possibleBoard, false, false, []);
   }
@@ -388,9 +402,9 @@ let generatePossible = (sourceBoard, possibleBoard) => {
   return possibleBoard;
 }
 
-let aggregateSets = (board) => {
+function aggregateSets(board) {
   let prevAggregateBoard = aggregateBoard.childNodes;
-  let prevLen = prevAggregateBoard.length;
+  const prevLen = prevAggregateBoard.length;
   for (let i = 0; i < prevLen; ++i) {
     prevAggregateBoard[0].remove();
   }
@@ -402,9 +416,7 @@ let aggregateSets = (board) => {
   const numTests = 50000;
   let tempArr = [];
   for (let i = 0; i < numTests; ++i) {
-    // console.log('before-possible');
     let possible = generatePossible(board, tempArr);
-    // console.log('after possible');
 
     for (let j = 0; j < numTiles; ++j) {
       if (possible[j] && (possible[j] !== MISS && possible[j] !== DESTROYED)) {
@@ -412,20 +424,21 @@ let aggregateSets = (board) => {
       }
     }
   }
-  // console.log('after tests');
+
   let temp = document.createElement('div');
-  // temp.classList.add('board-item');
   aggregateBoard.appendChild(temp);
+
   for (let i = 1; i < 11; ++i) {
     let temp = document.createElement('div');
     temp.classList.add('board-item');
     aggregateBoard.appendChild(temp);
     temp.innerText = i;
   }
+
   let max = +aggregate[12] / numTests; // first value
   let maxIdx = 12;
   let letter = 65;
-  for (let i = 11; i < numTiles; i += 11) {
+  for (let i = ROWS; i < numTiles; i += COLUMNS) {
     let temp = document.createElement('div');
     temp.classList.add('board-item');
     temp.innerText = String.fromCharCode(letter);
@@ -444,117 +457,47 @@ let aggregateSets = (board) => {
       aggregateBoard.appendChild(item);
     }
   }
-  // console.log(maxIdx, max);
+
   return maxIdx;
 }
 
-let lettersNumbers = new Set();
-for (let i = 1; i <= 10; ++i) {
-  lettersNumbers.add(i);
-}
-
-for (let i = 65; i <= 74; ++i) {
-  invalidSpot.add(String.fromCharCode(i));
-};
-
-let placeShipFromTo = (length, board, secondSub, idx, direction) => {
-  // let orientation = randomInt(4);
+function placeShipFromTo(length, board, secondSub, idx, direction) {
   let placed = false;
   let curIdx = idx;
 
-  // let increment;
-  // switch (direction) {
-  //   case UP:
-  //     increment = UP;
-  //     break;
-  //   case DOWN:
-  //     increment = DOWN;
-  //     break;
-  //   case LEFT:
-  //     increment = LEFT;
-  //     break;
-  //   default:
-  //     increment = RIGHT;
-  // }
-  // if (direction === UP) {
-  //   // place UPWARDS
-  //   increment = UP;
-  // } else if (direction === DOWN) {
-  //   // place DOWNWARDS
-  //   increment = DOWN;
-  // } else if (direction === LEFT) {
-  //   increment = LEFT;
-  // } else {
-  //   increment = RIGHT;
-  // }
   if (!inRange(curIdx) || invalidSpot.has(board[curIdx])) {
     return;
   }
+
   for (let i = 0; i < length; ++i) {
     curIdx += direction;
+
     if (!inRange(curIdx) || invalidSpot.has(board[curIdx]) || board[curIdx] === MISS || board[curIdx] === DESTROYED) {
       return;
     }
-    //  else if (i === (length - 1)) {
-    //   placeable = true;
-    // }
   }
-  // if (placeable) {
+
   let ship = length;
-  if (ship === 3 && secondSub) {
+  if (ship === SUBMARINE1 && secondSub) {
     ship = SUBMARINE2;
   }
   curIdx = idx;
   for (let i = 0; i < length; ++i) {
-    // board[curIdx] = ship;
     ++board[curIdx];
     curIdx += direction;
   }
-  // }
   return;
 }
 
-let validShips = new Set();
-validShips.add(CARRIER);
-validShips.add(BATTLESHIP);
-validShips.add(SUBMARINE1);
-validShips.add(SUBMARINE2);
-validShips.add(DESTROYER);
-
-let generatePossibleAt = (board, idx, direction, prevCorrect) => {
+function generatePossibleAt(board, idx, direction, prevCorrect) {
   idx += direction;
+
   if (!invalidSpot.has(board[idx])) {
     let spots = [];
+
     for (let i = 0; i < numTiles; ++i) {
       spots.push(board[i]);
     }
-    // let remainingShips = [];
-
-    // if (!shipHits.carrier.sunk && (prevCorrect <= CARRIER)) {
-    //   remainingShips.push(CARRIER);
-    // }
-    // if (!shipHits.battleship.sunk && (prevCorrect < BATTLESHIP)) {
-    //   remainingShips.push(BATTLESHIP);
-    // }
-    // if (!shipHits.submarine1.sunk && (prevCorrect < SUBMARINE1)) {
-    //   remainingShips.push(SUBMARINE1);
-    // }
-    // if (!shipHits.submarine2.sunk && (prevCorrect < SUBMARINE1)) {
-    //   remainingShips.push(SUBMARINE2);
-    // }
-    // if (!shipHits.destroyer.sunk && (prevCorrect < DESTROYER)) {
-    //   remainingShips.push(DESTROYER);
-    // }
-
-    // let randomShip = remainingShips[randomInt(remainingShips.length)];
-    // let secondSub = false;
-    // if (randomShip === SUBMARINE2) {
-    //   secondSub = true;
-    //   randomShip = SUBMARINE1;
-    // }
-    // placeShipFromTo(randomShip - prevCorrect, spots, secondSub, idx, direction);
-    // placeShipFromTo(randomShip, spots, secondSub, idx, direction * -1);
-
 
     let shipsUsed = 0;
     if (!shipHits.carrier.sunk && (prevCorrect <= CARRIER)) {
@@ -591,19 +534,18 @@ let generatePossibleAt = (board, idx, direction, prevCorrect) => {
           spots[i] = 10;
         }
       }
-
-      //  else if (spots[i] === MISS || spots[i] === DESTROYED) {
-      //   spots[i] = 0;
-      // };
     }
+
     return spots;
   }
+
   return [];
 }
 
-let aggregateOnHit = (board, hitIdx, direction, prevCorrect) => {
+function aggregateOnHit(board, hitIdx, direction, prevCorrect) {
   let prevAggregateBoard = aggregateBoard.childNodes;
   let prevLen = prevAggregateBoard.length;
+
   for (let i = 0; i < prevLen; ++i) {
     prevAggregateBoard[0].remove();
   }
@@ -612,12 +554,12 @@ let aggregateOnHit = (board, hitIdx, direction, prevCorrect) => {
   for (let i = 0; i < numTiles; ++i) {
     aggregate.push(0);
   }
+
   const numTests = 10;
   for (let i = 0; i < numTests; ++i) {
     let possible = generatePossibleAt(board, hitIdx, direction, prevCorrect);
     for (let j = 0; j < numTiles; ++j) {
-      if (possible[j] && (/*possible[j] !== HIT && */possible[j] !== MISS && possible[j] !== DESTROYED)) {
-        // ++aggregate[j];
+      if (possible[j] && (possible[j] !== MISS && possible[j] !== DESTROYED)) {
         aggregate[j] = possible[j];
       }
     }
@@ -634,7 +576,7 @@ let aggregateOnHit = (board, hitIdx, direction, prevCorrect) => {
   }
 
   let letter = 65;
-  for (let i = 11; i < numTiles; i += 11) {
+  for (let i = ROWS; i < numTiles; i += COLUMNS) {
     let temp = document.createElement('div');
     temp.classList.add('board-item');
     temp.innerText = String.fromCharCode(letter);
@@ -652,12 +594,13 @@ let aggregateOnHit = (board, hitIdx, direction, prevCorrect) => {
   }
 }
 
-let inRange = (idx) => {
+function inRange(idx) {
   return (idx >= 12) && (idx <= 120);
 }
 
 let tryDirection = async (board, curIdx, increment, tiles, correctCount) => {
   curIdx += increment;
+
   if (inRange(curIdx)) {
     await sleep(SLEEPTIME);
     tiles[curIdx].click();
@@ -665,7 +608,6 @@ let tryDirection = async (board, curIdx, increment, tiles, correctCount) => {
 
     while (board[curIdx] === HIT) {
       ++correctCount;
-      // aggregateOnHit(board, curIdx, increment, correctCount);
       aggregateSets(board);
 
       curIdx += increment;
@@ -677,21 +619,22 @@ let tryDirection = async (board, curIdx, increment, tiles, correctCount) => {
         return correctCount;
       }
     }
+
     return correctCount;
   } else {
     return 0;
   }
 }
 
-let combineAggregate = (...boards) => {
-  let boardCount = boards.length;
-  if (boardCount <= 0) {
-    return;
-  }
+function combineAggregate(...boards) {
+  const boardCount = boards.length;
+  if (boardCount <= 0) return;
+
   let final = [];
   for (let i = 0; i < numTiles; ++i) {
     final.push(0);
   }
+
   for (const board of boards) {
     console.log(board);
     for (let i = 0; i < numTiles; ++i) {
@@ -707,12 +650,14 @@ let combineAggregate = (...boards) => {
       final[i] /= boardCount;
     }
   }
+
   return final;
 }
 
-let aggregateHitAllDirections = (board, hitIdx, prevCorrect) => {
+function aggregateHitAllDirections(board, hitIdx, prevCorrect) {
   let prevAggregateBoard = aggregateBoard.childNodes;
-  let prevLen = prevAggregateBoard.length;
+  const prevLen = prevAggregateBoard.length;
+
   for (let i = 0; i < prevLen; ++i) {
     prevAggregateBoard[0].remove();
   }
@@ -729,10 +674,8 @@ let aggregateHitAllDirections = (board, hitIdx, prevCorrect) => {
     let possibleRight = generatePossibleAt(board, hitIdx, RIGHT, prevCorrect);
     let possibleLeft = generatePossibleAt(board, hitIdx, LEFT, prevCorrect);
     let possibleAll = combineAggregate(possibleUp, possibleDown, possibleRight, possibleLeft);
-    // console.log('all directions', possibleAll);
     for (let j = 0; j < numTiles; ++j) {
       if (possibleAll[j] && (possibleAll[j] !== HIT && possibleAll[j] !== MISS && possibleAll[j] !== DESTROYED)) {
-        // ++aggregate[j];
         aggregate[j] = possibleAll[j];
       }
     }
@@ -749,7 +692,7 @@ let aggregateHitAllDirections = (board, hitIdx, prevCorrect) => {
   }
 
   let letter = 65;
-  for (let i = 11; i < numTiles; i += 11) {
+  for (let i = ROWS; i < numTiles; i += COLUMNS) {
     let temp = document.createElement('div');
     temp.classList.add('board-item');
     temp.innerText = String.fromCharCode(letter);
@@ -757,7 +700,7 @@ let aggregateHitAllDirections = (board, hitIdx, prevCorrect) => {
     aggregateBoard.appendChild(temp);
     for (let j = 1; j <= 10; ++j) {
       let item = document.createElement('div');
-      let index = i + j;
+      const index = i + j;
       let value = +aggregate[index] / numTests;
 
       item.style.background = heatMapColorforValue(value);
@@ -770,44 +713,36 @@ let aggregateHitAllDirections = (board, hitIdx, prevCorrect) => {
 let seekDestroy = async (board, startingIdx, tiles) => {
   let curIdx = startingIdx;
   let correctCount = 1;
-  // aggregateHitAllDirections(board, startingIdx, correctCount);
 
   if (inRange(startingIdx + RIGHT) && !shipAt(board, startingIdx + RIGHT)) {
     await tryDirection(board, curIdx, RIGHT, tiles, correctCount).then(result => {
       correctCount = result;
-      // aggregateHitAllDirections(board, startingIdx, correctCount);
     });
     curIdx = startingIdx;
     if (board[startingIdx] === DESTROYED) {
       return;
     }
   }
-
-
 
   if (inRange(startingIdx + LEFT) && !shipAt(board, startingIdx + LEFT)) {
     await tryDirection(board, curIdx, LEFT, tiles, correctCount).then(result => {
       correctCount = result;
-      // aggregateHitAllDirections(board, startingIdx, correctCount);
     });
     curIdx = startingIdx;
     if (board[startingIdx] === DESTROYED) {
       return;
     }
   }
-
 
   if (inRange(startingIdx + UP) && !shipAt(board, startingIdx + UP)) {
     await tryDirection(board, curIdx, UP, tiles, correctCount).then(result => {
       correctCount = result;
-      // aggregateHitAllDirections(board, startingIdx, correctCount);
     });
     curIdx = startingIdx;
     if (board[startingIdx] === DESTROYED) {
       return;
     }
   }
-
 
   if (inRange(startingIdx + DOWN) && !shipAt(board, startingIdx + DOWN)) {
     await tryDirection(board, curIdx, DOWN, tiles, correctCount).then(result => {
@@ -840,16 +775,14 @@ let aiMoves = async () => {
 
     if (boardState.visible[idx] === HIT) {
       aggregateSets(boardState.visible);
-      // aggregateHitAllDirections(boardState.visible, idx, 1);
       await seekDestroy(boardState.visible, idx, tiles);
     }
     idx = aggregateSets(boardState.visible);
-    // console.log(idx);
   }
   cover.remove();
 }
 
-let resetBoard = (board) => {
+function resetBoard(board) {
   board.visible.length = 0;
   for (let i = 0; i < numTiles; ++i) {
     board.visible.push(DEFAULT);
@@ -883,17 +816,6 @@ let resetBoard = (board) => {
   displayBoard(boardState);
 }
 
-let playerTurns;
-let aiTurns;
-
-// resetBtn.onclick = () => {
-//   // let savePlayer = document.createElement('span');
-//   // savePlayer.innerText = `Your amount of turns: ${playerTurns}`;
-// }
-
-let aiPlayed = false;
-
-let startAIBtn = document.getElementById('start-ai');
 // startAIBtn.innerText = 'Let AI play';
 // startAIBtn.id = 'start-ai';
 startAIBtn.onclick = async () => {
@@ -924,14 +846,11 @@ startAIBtn.onclick = async () => {
   updateAiStats(aiWon, aiTurns);
 }
 
-const WON_MATCH = 'linear-gradient(90deg, #67e99d, #36e27e)';
-let LOST_MATCH = 'linear-gradient(90deg, #ea6666, #e74b4b)';
-
 let displayMatch = (playerCount, aiCount) => {
   let matchCard = document.createElement('li');
   matchCard.classList.add('match');
   let decorLineType;
-  console.log('player:', playerCount, 'ai:', aiCount);
+  // console.log('player:', playerCount, 'ai:', aiCount);
   if (playerCount <= aiCount) {
     matchCard.style.background = WON_MATCH;
     decorLineType = 'won';
@@ -943,14 +862,9 @@ let displayMatch = (playerCount, aiCount) => {
   matchHistory.prepend(matchCard);
 }
 
-aggregateBoard.style.display = 'none';
-// displayInternal(boardState);
-
-// displayMatch(0, 0);
-// displayMatch(1, 0);
-
-let clickAll = () => {
+function clickAll() {
   let tiles = mainBoard.childNodes;
+
   for (let i = 0; i < numTiles; ++i) {
     tiles[i].click();
   }
@@ -961,7 +875,7 @@ let clickAll = () => {
 //   clickAll();
 // }
 
-let newGame = (game) => {
+function newGame(game) {
   initBoard(game);
   resetBoard(game);
 }
@@ -978,3 +892,12 @@ document.addEventListener('keydown', (event) => {
     clickAll();
   }
 });
+
+/* ------- START GAME ------- */
+
+initBoard(boardState);
+displayBoard(boardState);
+// displayInternal(boardState);
+
+aggregateBoard.style.display = 'none';
+// displayInternal(boardState);

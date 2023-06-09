@@ -17,19 +17,18 @@
     <!-- Popup content -->
     <div class="popup-content">
       <span class="close-btn" onclick="closePopup()">&times;</span>
-      <h2 class="title">Welcome to a demonstration of the Monte Carlo Algorithm!</h2>
-      <p class="description">Here you can compete head-to-head against an AI trained to use the
+      <h2 class="title">Welcome to a demonstration of a Monte Carlo Algorithm!</h2>
+      <p class="description">Here you can compete head-to-head against an AI trained to use a
         <a target="_blank" href="https://en.wikipedia.org/wiki/Monte_Carlo_algorithm">Monte Carlo Algorithm</a> to play
         the board game <a target="_blank" href="https://en.wikipedia.org/wiki/Battleship_(game)">Battleship</a>.
-        This algorithm takes a straightforward approach - it looks at a large sample of
-        randomly
-        generated possible game states and selects the move where a ship is most likely to be.
+        This algorithm takes a straightforward approach - it takes a large sample of randomly
+        generated possible game states and selects the square where a ship is most likely to be.
         <br /><br />
         You'll first play the game yourself, and then have the option to watch the AI play the
         same board configuration. An extra game board will appear giving you a glance into what the AI sees as it's
-        playing. Before each move, the AI generates a heat map of how likely a ship is on each square by
-        aggregating
-        data from tens of thousands of possible ship configurations given the current game state (ie. opponent's
+        playing; before each move, the AI generates a heat map of how likely a ship is on each square by
+        aggregating data from tens of thousands of possible ship configurations given the current game state (ie.
+        opponent's
         ships remaining, previous hits and misses) and selects the square where a ship was present in the most
         configurations.
         <br /><br />
